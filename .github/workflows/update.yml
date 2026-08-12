@@ -3,7 +3,9 @@ name: Update VPN Subscription
 on:
   schedule:
     - cron: '0 */6 * * *'
+
   workflow_dispatch: {}
+
   push:
     branches:
       - main
@@ -34,7 +36,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
 
       - name: Download Xray-core
         run: |
@@ -46,7 +49,7 @@ jobs:
 
           VERSION=$(curl -fsSL \
             https://api.github.com/repos/XTLS/Xray-core/releases/latest \
-            | python -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+            | python -c "import sys, json; print(json.load(sys.stdin)['tag_name'])")
 
           echo "Xray version: ${VERSION}"
 
@@ -74,16 +77,45 @@ jobs:
 
           ./xray_bin/xray version
 
-      - name: Test configs & build subscriptions
+      - name: Test configs and build subscriptions
         run: |
           python -u scripts/build_subscription.py \
             --xray-bin ./xray_bin/xray \
             --workers 20 \
+            --timeout 8 \
+            --speed-timeout 10 \
             --max-output 20 \
             --max-latency-ms 350 \
             --min-speed-kbps 250 \
-            --round-gap 30 \
-            --skip-test
+            --round-gap 30
+
+      - name: Show build results
+        run: |
+          echo "========================================"
+          echo "Generated files:"
+          echo "========================================"
+
+          ls -lah output/
+
+          echo ""
+          echo "========================================"
+          echo "Subscription sizes:"
+          echo "========================================"
+
+          if [ -f output/subscription.txt ]; then
+            echo "subscription.txt:"
+            wc -c output/subscription.txt
+          fi
+
+          if [ -f output/subscription_whitelist.txt ]; then
+            echo "subscription_whitelist.txt:"
+            wc -c output/subscription_whitelist.txt
+          fi
+
+          if [ -f output/report.json ]; then
+            echo "report.json:"
+            wc -c output/report.json
+          fi
 
       - name: Commit updated subscription
         run: |
@@ -92,7 +124,9 @@ jobs:
 
           git add output/
 
-          git diff --cached --quiet || \
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
             git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
-
-          git push
+            git push
+          fi
