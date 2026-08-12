@@ -2,7 +2,6 @@
 # нашёл/проверил и хочешь ВСЕГДА оставлять в подписке, даже если
 # автотест их когда-то не пройдёт (например, временный сбой сервера).
 # По одному конфигу на строку.
-
 vless://bfa91d79-049c-41e1-be94-029397377150@176.123.165.127:56745?encryption=none&security=none&type=tcp#%F0%9F%87%A6%F0%9F%87%BF%09Azerbaijan-pytonvpn
 vless://bfa91d79-049c-41e1-be94-029397377150@176.123.165.127:12672?encryption=none&security=none&type=tcp#%F0%9F%87%AB%F0%9F%87%AE%09Finland
 vless://bfa91d79-049c-41e1-be94-029397377150@176.123.165.127:57836?encryption=none&security=none&type=tcp#%F0%9F%87%A6%F0%9F%87%AA%09United%20Arab%20Emirates
