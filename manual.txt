@@ -21,3 +21,7 @@ vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.251.236:443?encryption=none&s
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.252.118:443?encryption=none&security=reality&sni=ir-012.rita-cloud.com&fp=firefox&pbk=rqxv2mDuaBynNjatS49r8sjoxv3u2EjAWHzKFwF-YTE&sid=6fa5d699cc6a6b66&type=tcp&flow=xtls-rprx-vision#🇳🇱 Нидерланды | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇬🇧 Великобритания | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@193.233.82.76:443?encryption=none&security=reality&sni=ya.ru&fp=firefox&pbk=HYmfuVfjxEcHl6AkNr3WV1C0GfeAEXnBkIBJ31PYvXc&sid=a1b2c3d4&type=tcp&flow=xtls-rprx-vision#🇳🇱 Нидерланды | Reality
+hysteria2://51e88c16-ce13-4c12-a399-646968b18f96@104.165.205.42:8443/?sni=speedtestmark.com#🇧🇱 F7121053658 | Быстрый
+hysteria2://51e88c16-ce13-4c12-a399-646968b18f96@45.145.43.56:8443/?sni=speedtestmark.com#🇩🇪 F7121053658 | Быстрый
+hysteria2://51e88c16-ce13-4c12-a399-646968b18f96@87.251.19.13:8443/?sni=speedtestmark.com#🇳🇱 F7121053658 | Быстрый
+vless://51e88c16-ce13-4c12-a399-646968b18f96@91.185.83.49:10443?encryption=none&type=grpc&serviceName=grpc&mode=gun&security=reality&sni=5post-gate.x5.ru&fp=qq&pbk=ivgTfLR13A6xBsicIA28OPoav2tXlsstTTmGuETfnSk&sid=5c766813929a1fdd#🇱🇺📱 LTE Обход | Глуши
