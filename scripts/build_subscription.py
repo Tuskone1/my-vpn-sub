@@ -2,24 +2,27 @@
 """
 VPN Subscription Aggregator & Tester
 =====================================
-1. Тянет конфиги (vless/vmess/trojan/ss) из sources.txt (в т.ч. Telegram-каналы)
+1. Тянет конфиги (vless/vmess/trojan/ss) из sources.txt / sources_whitelist.txt
+   (в т.ч. Telegram-каналы — просто @channel или t.me/channel)
 2. Парсит и убирает дубликаты
 3. Тестирует КАЖДЫЙ конфиг ДВАЖДЫ через реальный локальный Xray-процесс
    (не просто TCP-хендшейк, а настоящий HTTP-запрос через прокси), чтобы
-   отсеять "флаки"-серверы, которые отвечают один раз и потом отваливаются
-4. Оставляет только те, что уложились в лимит задержки (--max-latency-ms) ОБА
-   раза — то есть только реально быстрые и стабильные
-5. Публикует ДВЕ отдельные подписки:
-     output/subscription.txt        — обычные конфиги (для WiFi/кабеля)
-     output/subscription_white.txt  — конфиги для белых списков (жёсткий
-                                       мобильный интернет)
-   Разделение задаётся тегом [white] / [regular] перед ссылкой в sources.txt
-   или manual.txt. Без тега — по умолчанию "regular".
-6. output/report.json — подробный отчёт по каждому конфигу (оба раунда,
-   финальная задержка, категория) — для ручной проверки
-7. manual.txt — конфиги, добавленные вручную: тестируются (для информации),
-   но остаются в подписке всегда, даже если тест не прошёл
-8. blacklist.txt — подстроки хостов, которые нужно всегда игнорировать
+   отсеять "флаки"-серверы, которые отвечают один раз и потом отваливаются.
+   Финальный раунд дополнительно проверяет реальную скорость закачки.
+4. Публикует ДВЕ отдельные подписки:
+     output/subscription.txt            — обычные конфиги (для WiFi/кабеля),
+                                           источники: sources.txt + manual.txt
+     output/subscription_whitelist.txt  — конфиги для белых списков (жёсткий
+                                           мобильный интернет), источники:
+                                           sources_whitelist.txt + manual_whitelist.txt
+5. output/report.json — подробный отчёт по каждому конфигу (оба раунда,
+   пинг, скорость, категория) — для ручной проверки
+6. manual.txt / manual_whitelist.txt — конфиги, добавленные вручную: тоже
+   тестируются (для информации), но остаются в подписке всегда, даже если
+   тест не прошёл
+7. blacklist.txt — подстроки хостов, которые нужно всегда игнорировать
+8. --skip-test — ручной режим: публикует только manual.txt/manual_whitelist.txt
+   как есть, вообще без сети и без Xray (быстро, никогда не зависает)
 """
 
 import argparse
@@ -29,6 +32,7 @@ import json
 import os
 import queue
 import re
+import socket
 import subprocess
 import sys
 import tempfile
@@ -41,8 +45,6 @@ import requests
 TEST_URL = "https://www.gstatic.com/generate_204"
 BASE_SOCKS_PORT = 24000
 URI_RE = re.compile(r'(?:vless|vmess|trojan|ss)://[^\s<>"\'\\]+')
-CATEGORY_FILENAMES = {"regular": "subscription.txt", "white": "subscription_white.txt"}
-TAG_RE = re.compile(r'^\[(\w+)\]\s*(.+)$')
 
 
 # --------------------------------------------------------------------------
@@ -54,19 +56,6 @@ def load_lines(path):
         return []
     with open(path, encoding="utf-8") as f:
         return [l.strip() for l in f if l.strip() and not l.strip().startswith("#")]
-
-
-def load_tagged_lines(path):
-    """Строка может начинаться с [white] или [regular] — иначе категория
-    по умолчанию 'regular'. Возвращает список (категория, значение)."""
-    out = []
-    for line in load_lines(path):
-        m = TAG_RE.match(line)
-        if m:
-            out.append((m.group(1).lower(), m.group(2).strip()))
-        else:
-            out.append(("regular", line))
-    return out
 
 
 def is_telegram_source(url):
@@ -423,10 +412,47 @@ def main():
     ap.add_argument("--min-speed-kbps", type=float, default=250.0, help="мин. скорость закачки, КБ/с")
     ap.add_argument("--max-output", type=int, default=20, help="сколько конфигов оставлять в каждой подписке")
     ap.add_argument("--outdir", default="output")
+    ap.add_argument("--skip-test", action="store_true",
+                     help="не тестировать вообще — просто опубликовать manual.txt/manual_whitelist.txt как есть "
+                          "(ручной режим, без источников и без Xray)")
     args = ap.parse_args()
 
     os.makedirs(args.outdir, exist_ok=True)
     blacklist = load_lines(args.blacklist)
+
+    # Жёсткий предохранитель: без этого при SOCKS-прокси через "мёртвый"
+    # (не отвечающий вообще) сервер таймаут requests иногда не срабатывает,
+    # и проверка зависает навсегда. Это ограничивает ЛЮБУЮ сетевую операцию
+    # в процессе таким потолком времени.
+    socket.setdefaulttimeout(max(args.timeout, args.speed_timeout) + 5)
+
+    if args.skip_test:
+        print("[i] --skip-test: публикую только вручную добавленные конфиги, без проверки и без источников")
+        for category in ("normal", "white"):
+            manual_path = args.manual if category == "normal" else args.manual_white
+            manual_uris = load_lines(manual_path)
+            seen = set()
+            final_lines = []
+            for uri in manual_uris:
+                result = parse_uri(uri)
+                if not result:
+                    print(f"[!] [{category}] не разобрано, пропущено: {uri[:60]}...")
+                    continue
+                meta, _ = result
+                if any(b in meta["host"] for b in blacklist):
+                    continue
+                key = (meta["proto"], meta["host"], meta["port"])
+                if key in seen:
+                    continue
+                seen.add(key)
+                final_lines.append(uri)
+            sub_b64 = base64.b64encode("\n".join(final_lines).encode("utf-8")).decode("utf-8")
+            suffix = "" if category == "normal" else "_whitelist"
+            sub_path = os.path.join(args.outdir, f"subscription{suffix}.txt")
+            with open(sub_path, "w", encoding="utf-8") as f:
+                f.write(sub_b64)
+            print(f"[i] [{category}] опубликовано без теста: {len(final_lines)} -> {sub_path}")
+        return
 
     normal_items = load_category(args.sources, args.manual, "normal", blacklist)
     white_items = load_category(args.sources_white, args.manual_white, "white", blacklist)
