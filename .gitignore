@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+xray_bin/
+xray.zip

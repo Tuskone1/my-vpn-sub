@@ -1,0 +1,6 @@
+# Источники для подписки БЕЛЫХ СПИСКОВ — специально для жёстко
+# ограниченного мобильного интернета (режим "запрещено всё, кроме
+# одобренного"). По одной ссылке на строку.
+
+# igareck/vpn-configs-for-russia — белые списки, CIDR, топ-150 для телефона:
+https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt
