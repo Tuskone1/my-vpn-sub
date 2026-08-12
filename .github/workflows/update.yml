@@ -5,7 +5,8 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch: {}
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - 'sources.txt'
       - 'sources_whitelist.txt'
@@ -21,29 +22,77 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install python deps
-        run: pip install -r requirements.txt
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
 
       - name: Download Xray-core
         run: |
-          curl -L -o xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+          set -e
+
+          mkdir -p xray_bin
+
+          echo "Getting latest Xray version..."
+
+          VERSION=$(curl -fsSL \
+            https://api.github.com/repos/XTLS/Xray-core/releases/latest \
+            | python -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+
+          echo "Xray version: ${VERSION}"
+
+          echo "Downloading Xray..."
+
+          curl -fL --retry 5 --retry-delay 3 \
+            -o xray.zip \
+            "https://github.com/XTLS/Xray-core/releases/download/${VERSION}/Xray-linux-64.zip"
+
+          echo "Checking downloaded file..."
+
+          file xray.zip
+
+          echo "Testing ZIP archive..."
+
+          unzip -t xray.zip
+
+          echo "Extracting Xray..."
+
           unzip -o xray.zip -d xray_bin
+
           chmod +x xray_bin/xray
 
+          echo "Checking Xray version..."
+
+          ./xray_bin/xray version
+
       - name: Test configs & build subscriptions
-        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 20 --max-latency-ms 350 --min-speed-kbps 250 --round-gap 30 --skip-test
+        run: |
+          python -u scripts/build_subscription.py \
+            --xray-bin ./xray_bin/xray \
+            --workers 20 \
+            --max-output 20 \
+            --max-latency-ms 350 \
+            --min-speed-kbps 250 \
+            --round-gap 30 \
+            --skip-test
 
       - name: Commit updated subscription
         run: |
           git config user.name "sub-bot"
           git config user.email "sub-bot@users.noreply.github.com"
+
           git add output/
-          git diff --cached --quiet || git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
+
+          git diff --cached --quiet || \
+            git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
+
           git push
