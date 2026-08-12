@@ -1,12 +1,9 @@
-# Источники для ОБЫЧНОЙ подписки (не белые списки) — для стандартного
-# интернета / Wi-Fi без спец-ограничений. По одной ссылке на строку.
-# Поддерживает: обычные raw-ссылки, готовые подписки, Telegram (@channel).
+# Источники для ОБЫЧНОЙ подписки (не белые списки).
+# Для теста — только один маленький источник, остальное закомментировано.
 
 # igareck/vpn-configs-for-russia — ТОП-150 микс протоколов для телефона:
 https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt
 
-# Au1rxx/free-vpn-subscriptions — обновление раз в час, HTTP-проверка перед публикацией:
-https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/v2ray-base64.txt
-
-# тот же репозиторий, только Германия (пример гео-фильтра под европейский выход):
-https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/by-country/v2ray-base64-DE.txt
+# Au1rxx временно отключён для теста — раскомментируй (убери #) когда убедишься что всё работает:
+# https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/v2ray-base64.txt
+# https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/by-country/v2ray-base64-DE.txt
