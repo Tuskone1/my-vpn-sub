@@ -1507,7 +1507,9 @@ def load_category(
         )
 
         meta["category"] = category
-
+        
+        meta["is_manual"] = uri in manual_uris
+        
         meta["is_bypass"] = (
             category == "white"
             and is_bypass_config(
@@ -1706,6 +1708,12 @@ def main():
         help="Пропустить тесты Xray"
     )
 
+    parser.add_argument(
+    "--manual-fast",
+    action="store_true",
+    help="Не тестировать конфиги из manual.txt и manual_whitelist.txt"
+)
+
     args = parser.parse_args()
 
     os.makedirs(
@@ -1757,203 +1765,278 @@ def main():
     # TESTING / SKIP TEST
     # ------------------------------------------------------------------
 
+    final_ok = []
+
+    # ==============================================================
+    # ПОЛНОСТЬЮ ОТКЛЮЧИТЬ ТЕСТЫ
+    # ==============================================================
     if args.skip_test:
-        print("[i] ⚡ Включен --skip-test. Пропускаем тесты Xray...")
-        final_ok = []
+
+        print(
+            "[i] ⚡ --skip-test: "
+            "пропускаю тестирование ВСЕХ конфигов..."
+        )
+
         for meta, outbound in all_items:
             final_ok.append({
                 **meta,
                 "ok": True,
                 "error": None,
-                "latency_ms": 10,
-                "speed_kbps": 1000.0,
-                "quality_score": 100.0,
+                "latency_ms": None,
+                "speed_kbps": None,
+                "quality_score": 0.0,
             })
 
-else:
-        # --------------------------------------------------------------
-        # ROUND 1
-        # --------------------------------------------------------------
+    else:
 
-    print(
-        f"[i] Раунд 1: "
-        f"проверяю "
-        f"{len(all_items)} конфигов..."
-    )
+        # ==========================================================
+        # MANUAL FAST
+        # ==========================================================
 
-    round1 = run_round(
-        args.xray_bin,
-        all_items,
-        args.workers,
-        args.timeout,
-        args.speed_timeout,
-        False
-    )
+        manual_items = []
+        test_items = []
 
-    round1_ok = set()
+        for meta, outbound in all_items:
 
-    for result in round1:
-
-        if not result.get(
-            "ok",
-            False
-        ):
-            continue
-
-        latency = result.get(
-            "latency_ms"
-        )
-
-        if latency is None:
-            continue
-
-        is_bypass = result.get(
-            "is_bypass",
-            False
-        )
-
-        # Для bypass отдельный предел latency
-        if is_bypass:
-            allowed_latency = (
-                args.bypass_max_latency_ms
-            )
-        else:
-            allowed_latency = (
-                args.max_latency_ms
-            )
-
-        if latency <= allowed_latency:
-            round1_ok.add(
-                (
-                    result["proto"],
-                    result["host"],
-                    result["port"]
+            if (
+                args.manual_fast
+                and meta.get(
+                    "is_manual",
+                    False
                 )
+            ):
+                manual_items.append(
+                    (
+                        meta,
+                        outbound
+                    )
+                )
+            else:
+                test_items.append(
+                    (
+                        meta,
+                        outbound
+                    )
+                )
+
+        if manual_items:
+
+            print(
+                f"[i] ⚡ Manual fast: "
+                f"{len(manual_items)} ручных конфигов "
+                f"без тестирования."
             )
 
-    print(
-        f"[i] Раунд 1: "
-        f"прошли "
-        f"{len(round1_ok)}/"
-        f"{len(all_items)}"
-    )
+            for meta, outbound in manual_items:
 
-    survivors = [
-        (
-            meta,
-            outbound
-        )
+                final_ok.append({
+                    **meta,
+                    "ok": True,
+                    "error": None,
 
-        for meta, outbound
-        in all_items
+                    # Нулевые значения здесь специально.
+                    # Ручные конфиги не проходят тест.
+                    "latency_ms": None,
+                    "speed_kbps": None,
 
-        if (
-            meta["proto"],
-            meta["host"],
-            meta["port"]
-        ) in round1_ok
-    ]
+                    # Чтобы ручные конфиги не проигрывали
+                    # автоматически протестированным.
+                    "quality_score": 0.0,
+                })
 
-    if (
-        survivors
-        and args.round_gap > 0
-    ):
-        print(
-            f"[i] Жду "
-            f"{args.round_gap:.0f} сек..."
-        )
+        # ==========================================================
+        # АВТОМАТИЧЕСКИЕ КОНФИГИ
+        # ==========================================================
 
-        time.sleep(
-            args.round_gap
-        )
+        if test_items:
 
-    # ------------------------------------------------------------------
-    # ROUND 2
-    # ------------------------------------------------------------------
-
-    print(
-        f"[i] Раунд 2: "
-        f"latency + speed: "
-        f"{len(survivors)} конфигов..."
-    )
-
-    round2 = run_round(
-        args.xray_bin,
-        survivors,
-        args.workers,
-        args.timeout,
-        args.speed_timeout,
-        True
-    )
-
-    # ------------------------------------------------------------------
-    # FINAL FILTER
-    # ------------------------------------------------------------------
-
-    final_ok = []
-
-    for result in round2:
-
-        if not result.get(
-            "ok",
-            False
-        ):
-            continue
-
-        latency = result.get(
-            "latency_ms"
-        )
-
-        speed = result.get(
-            "speed_kbps"
-        )
-
-        if (
-            latency is None
-            or speed is None
-        ):
-            continue
-
-        is_bypass = result.get(
-            "is_bypass",
-            False
-        )
-
-        if is_bypass:
-            max_latency = (
-                args.bypass_max_latency_ms
+            print(
+                f"[i] Раунд 1: "
+                f"проверяю "
+                f"{len(test_items)} конфигов..."
             )
 
-            min_speed = (
-                args.bypass_min_speed_kbps
+            round1 = run_round(
+                args.xray_bin,
+                test_items,
+                args.workers,
+                args.timeout,
+                args.speed_timeout,
+                False
             )
+
+            round1_ok = set()
+
+            for result in round1:
+
+                if not result.get(
+                    "ok",
+                    False
+                ):
+                    continue
+
+                latency = result.get(
+                    "latency_ms"
+                )
+
+                if latency is None:
+                    continue
+
+                is_bypass = result.get(
+                    "is_bypass",
+                    False
+                )
+
+                if is_bypass:
+
+                    allowed_latency = (
+                        args.bypass_max_latency_ms
+                    )
+
+                else:
+
+                    allowed_latency = (
+                        args.max_latency_ms
+                    )
+
+                if latency <= allowed_latency:
+
+                    round1_ok.add(
+                        (
+                            result["proto"],
+                            result["host"],
+                            result["port"]
+                        )
+                    )
+
+            print(
+                f"[i] Раунд 1: "
+                f"прошли "
+                f"{len(round1_ok)}/"
+                f"{len(test_items)}"
+            )
+
+            survivors = [
+                (
+                    meta,
+                    outbound
+                )
+
+                for meta, outbound
+                in test_items
+
+                if (
+                    meta["proto"],
+                    meta["host"],
+                    meta["port"]
+                ) in round1_ok
+            ]
+
+            if (
+                survivors
+                and args.round_gap > 0
+            ):
+                print(
+                    f"[i] Жду "
+                    f"{args.round_gap:.0f} сек..."
+                )
+
+                time.sleep(
+                    args.round_gap
+                )
+
+            # ======================================================
+            # ROUND 2
+            # ======================================================
+
+            print(
+                f"[i] Раунд 2: "
+                f"latency + speed: "
+                f"{len(survivors)} конфигов..."
+            )
+
+            round2 = run_round(
+                args.xray_bin,
+                survivors,
+                args.workers,
+                args.timeout,
+                args.speed_timeout,
+                True
+            )
+
+            # ======================================================
+            # FINAL FILTER
+            # ======================================================
+
+            for result in round2:
+
+                if not result.get(
+                    "ok",
+                    False
+                ):
+                    continue
+
+                latency = result.get(
+                    "latency_ms"
+                )
+
+                speed = result.get(
+                    "speed_kbps"
+                )
+
+                if (
+                    latency is None
+                    or speed is None
+                ):
+                    continue
+
+                is_bypass = result.get(
+                    "is_bypass",
+                    False
+                )
+
+                if is_bypass:
+
+                    max_latency = (
+                        args.bypass_max_latency_ms
+                    )
+
+                    min_speed = (
+                        args.bypass_min_speed_kbps
+                    )
+
+                else:
+
+                    max_latency = (
+                        args.max_latency_ms
+                    )
+
+                    min_speed = (
+                        args.min_speed_kbps
+                    )
+
+                if latency > max_latency:
+                    continue
+
+                if speed < min_speed:
+                    continue
+
+                result["quality_score"] = (
+                    calculate_score(
+                        speed,
+                        latency
+                    )
+                )
+
+                final_ok.append(
+                    result
+                )
 
         else:
-            max_latency = (
-                args.max_latency_ms
-            )
 
-            min_speed = (
-                args.min_speed_kbps
-            )
-
-        if latency > max_latency:
-            continue
-
-        if speed < min_speed:
-            continue
-
-        result["quality_score"] = (
-            calculate_score(
-                speed,
-                latency
-            )
-        )
-
-        final_ok.append(
-            result
-        )
-
+            # Переменные нужны report.json
+            round1 = []
+            round2 = []
     # ------------------------------------------------------------------
     # COUNTRY DETECTION
     # ------------------------------------------------------------------
