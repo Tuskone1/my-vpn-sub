@@ -225,24 +225,6 @@
       "country_code": "DE",
       "country_name": "Германия",
       "country_flag": "🇩🇪"
-    },
-    {
-      "proto": "vless",
-      "host": "opytbm.pleiades.codes",
-      "port": 443,
-      "remark": "🇩🇪 Обход #6",
-      "raw": "vless://3aabd489-04af-42fb-87e2-363d1b83d335@opytbm.pleiades.codes:443?encryption=none&type=xhttp&path=%2Fuploadfiles%2F&host=opytbm.pleiades.codes&mode=packet-up&extra=%7B%22path%22%3A%22%2Fuploadfiles%2F%22%2C%22xPaddingKey%22%3A%22_dc%22%2C%22xPaddingHeader%22%3A%22X-Cache%22%2C%22xPaddingMethod%22%3A%22tokenish%22%2C%22uplinkHTTPMethod%22%3A%22get%22%2C%22xPaddingObfsMode%22%3Atrue%2C%22xPaddingPlacement%22%3A%22queryInHeader%22%7D&security=tls&sni=opytbm.pleiades.codes&fp=random&alpn=h3%2Ch2%2Chttp%2F1.1#🇩🇪 Обход #6",
-      "category": "normal",
-      "is_manual": true,
-      "is_bypass": false,
-      "ok": true,
-      "error": null,
-      "latency_ms": 0,
-      "speed_kbps": 0,
-      "quality_score": 0.0,
-      "country_code": "DE",
-      "country_name": "Германия",
-      "country_flag": "🇩🇪"
     }
   ]
 }
