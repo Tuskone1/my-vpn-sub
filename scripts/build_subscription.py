@@ -1736,19 +1736,40 @@ def main():
     # LOAD
     # ------------------------------------------------------------------
 
-    normal_items = load_category(
-        args.sources,
-        args.manual,
-        "normal",
-        blacklist
-    )
+    if args.skip_test:
+        print(
+            "[i] ⚡ --skip-test: "
+            "быстрый ручной режим"
+        )
 
-    white_items = load_category(
-        args.sources_white,
-        args.manual_white,
-        "white",
-        blacklist
-    )
+        normal_items = load_category(
+            "",
+            args.manual,
+            "normal",
+            blacklist
+        )
+
+        white_items = load_category(
+            "",
+            args.manual_white,
+            "white",
+            blacklist
+        )
+
+    else:
+        normal_items = load_category(
+            args.sources,
+            args.manual,
+            "normal",
+            blacklist
+        )
+
+        white_items = load_category(
+            args.sources_white,
+            args.manual_white,
+            "white",
+            blacklist
+        )
 
     all_items = (
         normal_items
@@ -1777,13 +1798,12 @@ def main():
             "пропускаю тестирование ВСЕХ конфигов..."
         )
 
-        for meta, outbound in all_items:
             final_ok.append({
                 **meta,
                 "ok": True,
                 "error": None,
-                "latency_ms": None,
-                "speed_kbps": None,
+                "latency_ms": 0,
+                "speed_kbps": 0,
                 "quality_score": 0.0,
             })
 
