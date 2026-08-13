@@ -37,8 +37,8 @@ jobs:
           unzip -o xray.zip -d xray_bin
           chmod +x xray_bin/xray
 
-            - name: Test configs & build subscriptions
-              run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 15 --bypass-output 5 --max-latency-ms 400 --min-speed-kbps 350 --bypass-max-latency-ms 600 --bypass-min-speed-kbps 150 --round-gap 30
+      - name: Test configs & build subscriptions
+        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 15 --bypass-output 5 --max-latency-ms 400 --min-speed-kbps 350 --bypass-max-latency-ms 600 --bypass-min-speed-kbps 150 --round-gap 30
 
 
       - name: Commit updated subscription
