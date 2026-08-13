@@ -5,5 +5,5 @@
 https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt
 
 # Au1rxx временно отключён для теста — раскомментируй (убери #) когда убедишься что всё работает:
-# https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/v2ray-base64.txt
-# https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/by-country/v2ray-base64-DE.txt
+https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/v2ray-base64.txt
+https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/by-country/v2ray-base64-DE.txt
