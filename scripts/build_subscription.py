@@ -1700,6 +1700,12 @@ def main():
         default="output"
     )
 
+    parser.add_argument(
+        "--skip-test",
+        action="store_true",
+        help="Пропустить тесты Xray"
+    )
+
     args = parser.parse_args()
 
     os.makedirs(
@@ -1717,13 +1723,7 @@ def main():
             args.speed_timeout
         ) + 5
     )
-
-    parser.add_argument(
-        "--skip-test",
-        action="store_true",
-        help="Пропустить тесты Xray"
-    )
-
+    
     # ------------------------------------------------------------------
     # LOAD
     # ------------------------------------------------------------------
