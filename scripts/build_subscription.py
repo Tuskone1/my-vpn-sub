@@ -2125,9 +2125,18 @@ def main():
         # BASE64
         # --------------------------------------------------------------
 
+        # Заголовки подписки (метаданные для клиентов)
+        headers = [
+            "#profile-title: base64:VHVza29uZSBWUE4=",
+            "#profile-update-interval: 1",
+        ]
+
+        # Объединяем заголовки и конфиги
+        content_lines = headers + final_lines
+
         sub_b64 = base64.b64encode(
             "\n".join(
-                final_lines
+                content_lines
             ).encode("utf-8")
         ).decode("utf-8")
 
