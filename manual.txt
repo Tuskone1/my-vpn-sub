@@ -1,9 +1,8 @@
-#profile-title: Tuskone VPN
-
-# Конфиги для ОБЫЧНОЙ подписки (не белые списки), которые ты сам
-# нашёл/проверил и хочешь ВСЕГДА оставлять в подписке, даже если
-# автотест их когда-то не пройдёт (например, временный сбой сервера).
-# По одному конфигу на строку.
+#profile-title: base64:8J+RkSBUdXNrb25lIFZQTg==
+#profile-update-interval: 12
+#support-url: https://t.me/
+#profile-web-page-url: https://t.me/
+#announce: base64:8J+ToiDQmtCw0L3QsNC7OiB0Lm1lL3lvdXJfY2hhbm5lbArwn5ugINCf0L7QtNC00LXRgNC20LrQsDogdC5tZS95b3VyX3N1cHBvcnRfYm90Cg==
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
 vless://553e3253-c454-431d-a7e6-42bc06ea5e14@62.233.43.86:9893?type=grpc&security=reality&serviceName=grpc-tunnel&sni=dl.google.com&pbk=bnRIb3Er1i-K6NGGByCO9UbGfOvu43ZoiK7ulPd1SzU&fp=qq&encryption=none#🇫🇮 Финляндия | gRPC
@@ -18,4 +17,3 @@ vless://d9e1508d-bf53-47ab-92c2-205706773750@81.163.23.187:7444?allowInsecure=1&
 vless://d9e1508d-bf53-47ab-92c2-205706773750@81.163.23.243:443?allowInsecure=1&flow=xtls-rprx-vision&fp=firefox&pbk=MeLgGh6XtWQVDlxmTJPxZO3jwB_xxW-N7Fl9OUTflnI&security=reality&sid=&sni=converter.sowt.app&type=tcp#🇩🇪 Обход #3
 vless://d9e1508d-bf53-47ab-92c2-205706773750@46.254.18.204:8443?allowInsecure=1&flow=&fp=firefox&pbk=K9vJ2zLFxi3VTmrguyLC1KrC920axeFSeA8x_xY4Xhw&security=reality&serviceName=ns&sid=&sni=yandex.ru&type=grpc#🇩🇪 Обход #4
 vless://d9e1508d-bf53-47ab-92c2-205706773750@37.143.15.24:8443?allowInsecure=1&flow=&fp=firefox&pbk=K9vJ2zLFxi3VTmrguyLC1KrC920axeFSeA8x_xY4Xhw&security=reality&serviceName=ns&sid=&sni=yandex.ru&type=grpc#🇩🇪 Обход #5
-
