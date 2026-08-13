@@ -1,8 +1,5 @@
-#profile-title: base64:8J+RkSBUdXNrb25lIFZQTg==
+#profile-title: base64:VHVza29uZSBWUE4=
 #profile-update-interval: 12
-#support-url: https://t.me/
-#profile-web-page-url: https://t.me/
-#announce: base64:8J+ToiDQmtCw0L3QsNC7OiB0Lm1lL3lvdXJfY2hhbm5lbArwn5ugINCf0L7QtNC00LXRgNC20LrQsDogdC5tZS95b3VyX3N1cHBvcnRfYm90Cg==
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
 vless://553e3253-c454-431d-a7e6-42bc06ea5e14@62.233.43.86:9893?type=grpc&security=reality&serviceName=grpc-tunnel&sni=dl.google.com&pbk=bnRIb3Er1i-K6NGGByCO9UbGfOvu43ZoiK7ulPd1SzU&fp=qq&encryption=none#🇫🇮 Финляндия | gRPC
