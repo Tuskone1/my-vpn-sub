@@ -1775,20 +1775,20 @@ def main():
         # ROUND 1
         # --------------------------------------------------------------
 
-        print(
-            f"[i] Раунд 1: "
-            f"проверяю "
-            f"{len(all_items)} конфигов..."
-        )
+    print(
+        f"[i] Раунд 1: "
+        f"проверяю "
+        f"{len(all_items)} конфигов..."
+    )
 
-        round1 = run_round(
-            args.xray_bin,
-            all_items,
-            args.workers,
-            args.timeout,
-            args.speed_timeout,
-            False
-        )
+    round1 = run_round(
+        args.xray_bin,
+        all_items,
+        args.workers,
+        args.timeout,
+        args.speed_timeout,
+        False
+    )
 
     round1_ok = set()
 
