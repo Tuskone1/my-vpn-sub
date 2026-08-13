@@ -1,54 +1,5 @@
+```python
 #!/usr/bin/env python3
-
-"""
-VPN Subscription Aggregator & Tester
-====================================
-
-Логика:
-
-1. Загружает конфиги из:
-   - sources.txt
-   - manual.txt
-   - sources_whitelist.txt
-   - manual_whitelist.txt
-
-2. Декодирует base64-подписки.
-
-3. Парсит:
-   - VLESS
-   - VMess
-   - Trojan
-   - Shadowsocks
-
-4. Удаляет дубликаты.
-
-5. Применяет blacklist к:
-   - host
-   - remark
-   - полному URI
-
-6. Проверяет КАЖДЫЙ конфиг через Xray в два раунда:
-   - раунд 1: реальный HTTP-запрос + latency
-   - раунд 2: latency + реальная скорость загрузки
-
-7. Только прошедшие оба раунда могут попасть в подписку.
-
-8. Для каждой категории выбираются лучшие конфиги:
-   - сначала высокая скорость
-   - затем низкая задержка
-   - максимум max-output
-
-9. Исходные названия конфигов полностью заменяются на:
-   Tuskone VPN 01
-   Tuskone VPN 02
-   ...
-
-10. Публикуются две отдельные подписки:
-    output/subscription.txt
-    output/subscription_whitelist.txt
-
-11. output/report.json содержит подробный отчёт.
-"""
 
 import argparse
 import base64
@@ -70,6 +21,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 
 
+# ==========================================================================
+# НАСТРОЙКИ
+# ==========================================================================
+
 TEST_URL = "https://www.gstatic.com/generate_204"
 
 SPEED_TEST_URL = (
@@ -85,9 +40,247 @@ URI_RE = re.compile(
 )
 
 
-# --------------------------------------------------------------------------
-# Загрузка файлов
-# --------------------------------------------------------------------------
+# ==========================================================================
+# СТРАНЫ
+# ==========================================================================
+
+COUNTRY_NAMES_RU = {
+    "DE": "Германия",
+    "FR": "Франция",
+    "NL": "Нидерланды",
+    "FI": "Финляндия",
+    "GB": "Великобритания",
+    "UK": "Великобритания",
+    "US": "США",
+    "CA": "Канада",
+    "PL": "Польша",
+    "CZ": "Чехия",
+    "SK": "Словакия",
+    "AT": "Австрия",
+    "CH": "Швейцария",
+    "BE": "Бельгия",
+    "SE": "Швеция",
+    "NO": "Норвегия",
+    "DK": "Дания",
+    "ES": "Испания",
+    "PT": "Португалия",
+    "IT": "Италия",
+    "RO": "Румыния",
+    "BG": "Болгария",
+    "HU": "Венгрия",
+    "RS": "Сербия",
+    "UA": "Украина",
+    "LT": "Литва",
+    "LV": "Латвия",
+    "EE": "Эстония",
+    "IS": "Исландия",
+    "IE": "Ирландия",
+    "LU": "Люксембург",
+    "MD": "Молдова",
+    "TR": "Турция",
+    "GE": "Грузия",
+    "AM": "Армения",
+    "AZ": "Азербайджан",
+    "KZ": "Казахстан",
+    "UZ": "Узбекистан",
+    "KG": "Кыргызстан",
+    "JP": "Япония",
+    "KR": "Южная Корея",
+    "SG": "Сингапур",
+    "HK": "Гонконг",
+    "TW": "Тайвань",
+    "IN": "Индия",
+    "IL": "Израиль",
+    "AE": "ОАЭ",
+    "AU": "Австралия",
+    "NZ": "Новая Зеландия",
+    "BR": "Бразилия",
+    "AR": "Аргентина",
+    "CL": "Чили",
+    "MX": "Мексика",
+    "ZA": "ЮАР",
+    "RU": "Россия",
+}
+
+
+COUNTRY_FLAGS = {}
+
+for code in COUNTRY_NAMES_RU:
+    if len(code) == 2:
+        COUNTRY_FLAGS[code] = (
+            chr(ord(code[0]) + 127397)
+            + chr(ord(code[1]) + 127397)
+        )
+
+
+COUNTRY_ALIASES = {
+    "германия": "DE",
+    "germany": "DE",
+    "deutschland": "DE",
+
+    "франция": "FR",
+    "france": "FR",
+
+    "нидерланды": "NL",
+    "нидерланд": "NL",
+    "netherlands": "NL",
+    "holland": "NL",
+
+    "финляндия": "FI",
+    "finland": "FI",
+
+    "великобритания": "GB",
+    "англия": "GB",
+    "uk": "GB",
+    "united kingdom": "GB",
+    "england": "GB",
+    "britain": "GB",
+
+    "сша": "US",
+    "usa": "US",
+    "united states": "US",
+    "america": "US",
+    "америка": "US",
+
+    "канада": "CA",
+    "canada": "CA",
+
+    "польша": "PL",
+    "poland": "PL",
+
+    "чехия": "CZ",
+    "czech": "CZ",
+    "czechia": "CZ",
+
+    "австрия": "AT",
+    "austria": "AT",
+
+    "швейцария": "CH",
+    "switzerland": "CH",
+
+    "бельгия": "BE",
+    "belgium": "BE",
+
+    "швеция": "SE",
+    "sweden": "SE",
+
+    "норвегия": "NO",
+    "norway": "NO",
+
+    "дания": "DK",
+    "denmark": "DK",
+
+    "испания": "ES",
+    "spain": "ES",
+
+    "португалия": "PT",
+    "portugal": "PT",
+
+    "италия": "IT",
+    "italy": "IT",
+
+    "румыния": "RO",
+    "romania": "RO",
+
+    "болгария": "BG",
+    "bulgaria": "BG",
+
+    "венгрия": "HU",
+    "hungary": "HU",
+
+    "сербия": "RS",
+    "serbia": "RS",
+
+    "украина": "UA",
+    "ukraine": "UA",
+
+    "литва": "LT",
+    "lithuania": "LT",
+
+    "латвия": "LV",
+    "latvia": "LV",
+
+    "эстония": "EE",
+    "estonia": "EE",
+
+    "турция": "TR",
+    "turkey": "TR",
+
+    "грузия": "GE",
+    "georgia": "GE",
+
+    "армения": "AM",
+    "armenia": "AM",
+
+    "азербайджан": "AZ",
+    "azerbaijan": "AZ",
+
+    "казахстан": "KZ",
+    "kazakhstan": "KZ",
+
+    "узбекистан": "UZ",
+    "uzbekistan": "UZ",
+
+    "кыргызстан": "KG",
+    "kyrgyzstan": "KG",
+    "kyrgyz": "KG",
+
+    "япония": "JP",
+    "japan": "JP",
+
+    "корея": "KR",
+    "южная корея": "KR",
+    "south korea": "KR",
+    "korea": "KR",
+
+    "сингапур": "SG",
+    "singapore": "SG",
+
+    "гонконг": "HK",
+    "hong kong": "HK",
+
+    "тайвань": "TW",
+    "taiwan": "TW",
+
+    "индия": "IN",
+    "india": "IN",
+
+    "израиль": "IL",
+    "israel": "IL",
+
+    "оаэ": "AE",
+    "uae": "AE",
+    "united arab emirates": "AE",
+
+    "австралия": "AU",
+    "australia": "AU",
+
+    "новая зеландия": "NZ",
+    "new zealand": "NZ",
+
+    "бразилия": "BR",
+    "brazil": "BR",
+
+    "аргентина": "AR",
+    "argentina": "AR",
+
+    "чили": "CL",
+    "chile": "CL",
+
+    "мексика": "MX",
+    "mexico": "MX",
+
+    "юар": "ZA",
+    "south africa": "ZA",
+
+    "россия": "RU",
+    "russia": "RU",
+}
+
+
+# ==========================================================================
+# ЗАГРУЗКА
+# ==========================================================================
 
 def load_lines(path):
     if not os.path.exists(path):
@@ -102,35 +295,27 @@ def load_lines(path):
         ]
 
 
-# --------------------------------------------------------------------------
-# Telegram
-# --------------------------------------------------------------------------
+# ==========================================================================
+# TELEGRAM
+# ==========================================================================
 
 def is_telegram_source(url):
     return url.startswith("@") or "t.me/" in url
 
 
 def normalize_telegram_url(url):
-    # @channel
     if url.startswith("@"):
         return f"https://t.me/s/{url[1:]}"
 
-    # уже t.me/s/channel
     if "t.me/s/" in url:
         return url
 
-    # t.me/channel
     prefix, _, channel = url.partition("t.me/")
 
     return f"{prefix}t.me/s/{channel}"
 
 
 def fetch_telegram_channel(url):
-    """
-    Загружает публичное web-превью Telegram-канала
-    и пытается достать конфиги из текста сообщений.
-    """
-
     tg_url = normalize_telegram_url(url)
 
     try:
@@ -144,27 +329,34 @@ def fetch_telegram_channel(url):
 
         response.raise_for_status()
 
-        text = html.unescape(response.text)
+        text = html.unescape(
+            response.text
+        )
 
-        uris = URI_RE.findall(text)
+        uris = URI_RE.findall(
+            text
+        )
 
         return [
-            uri.rstrip(".,;)]}\"'")
+            uri.rstrip(
+                ".,;)]}\"'"
+            )
             for uri in uris
         ]
 
     except Exception as e:
         print(
-            f"[!] telegram source failed: {tg_url} -> {e}",
+            f"[!] Telegram source failed: "
+            f"{tg_url} -> {e}",
             file=sys.stderr
         )
 
         return []
 
 
-# --------------------------------------------------------------------------
-# Источники
-# --------------------------------------------------------------------------
+# ==========================================================================
+# ИСТОЧНИКИ
+# ==========================================================================
 
 def fetch_source(url):
     if is_telegram_source(url):
@@ -180,7 +372,6 @@ def fetch_source(url):
 
         text = response.text.strip()
 
-        # Подписка часто приходит целиком в base64.
         try:
             padding = "=" * (-len(text) % 4)
 
@@ -205,16 +396,17 @@ def fetch_source(url):
 
     except Exception as e:
         print(
-            f"[!] source failed: {url} -> {e}",
+            f"[!] Source failed: "
+            f"{url} -> {e}",
             file=sys.stderr
         )
 
         return []
 
 
-# --------------------------------------------------------------------------
-# Parsing
-# --------------------------------------------------------------------------
+# ==========================================================================
+# PARSING
+# ==========================================================================
 
 def _b64_json(payload):
     padding = "=" * (-len(payload) % 4)
@@ -230,34 +422,50 @@ def _b64_json(payload):
 
 
 def parse_vless_trojan(uri, proto):
-    """
-    VLESS / Trojan
-    """
-
-    body = uri.split("://", 1)[1]
+    body = uri.split(
+        "://",
+        1
+    )[1]
 
     if "#" in body:
-        body, remark = body.split("#", 1)
+        body, remark = body.split(
+            "#",
+            1
+        )
     else:
         remark = ""
 
-    userinfo, hostport_q = body.split("@", 1)
+    userinfo, hostport_q = body.split(
+        "@",
+        1
+    )
 
     if "?" in hostport_q:
-        hostport, query = hostport_q.split("?", 1)
+        hostport, query = hostport_q.split(
+            "?",
+            1
+        )
     else:
         hostport = hostport_q
         query = ""
 
-    host, port = hostport.rsplit(":", 1)
+    host, port = hostport.rsplit(
+        ":",
+        1
+    )
 
     port = int(port)
 
     q = dict(
-        urllib.parse.parse_qsl(query)
+        urllib.parse.parse_qsl(
+            query
+        )
     )
 
-    network = q.get("type", "tcp")
+    network = q.get(
+        "type",
+        "tcp"
+    )
 
     security = q.get(
         "security",
@@ -268,7 +476,6 @@ def parse_vless_trojan(uri, proto):
         "network": network
     }
 
-    # Reality
     if security == "reality":
         stream["security"] = "reality"
 
@@ -295,7 +502,6 @@ def parse_vless_trojan(uri, proto):
             ),
         }
 
-    # TLS
     elif security == "tls":
         stream["security"] = "tls"
 
@@ -316,11 +522,9 @@ def parse_vless_trojan(uri, proto):
                 q["alpn"].split(",")
             )
 
-    # Без шифрования
     else:
         stream["security"] = "none"
 
-    # WebSocket
     if network == "ws":
         stream["wsSettings"] = {
             "path": q.get(
@@ -335,7 +539,6 @@ def parse_vless_trojan(uri, proto):
             },
         }
 
-    # gRPC
     elif network == "grpc":
         stream["grpcSettings"] = {
             "serviceName": q.get(
@@ -344,7 +547,6 @@ def parse_vless_trojan(uri, proto):
             )
         }
 
-    # VLESS
     if proto == "vless":
         user = {
             "id": userinfo,
@@ -373,7 +575,6 @@ def parse_vless_trojan(uri, proto):
             "streamSettings": stream,
         }
 
-    # Trojan
     else:
         outbound = {
             "protocol": "trojan",
@@ -403,20 +604,20 @@ def parse_vless_trojan(uri, proto):
 
 
 def parse_vmess(uri):
-    """
-    VMess
-    """
-
     payload = uri.split(
         "://",
         1
     )[1]
 
-    data = _b64_json(payload)
+    data = _b64_json(
+        payload
+    )
 
     host = data["add"]
 
-    port = int(data["port"])
+    port = int(
+        data["port"]
+    )
 
     network = data.get(
         "net",
@@ -506,10 +707,6 @@ def parse_vmess(uri):
 
 
 def parse_ss(uri):
-    """
-    Shadowsocks
-    """
-
     body = uri.split(
         "://",
         1
@@ -623,46 +820,78 @@ def parse_uri(uri):
 
     except Exception as e:
         print(
-            f"[!] parse failed for {uri[:80]}...: {e}",
+            f"[!] Parse failed for "
+            f"{uri[:80]}... -> {e}",
             file=sys.stderr
         )
 
     return None
 
 
-# --------------------------------------------------------------------------
-# Blacklist
-# --------------------------------------------------------------------------
+# ==========================================================================
+# BLACKLIST
+# ==========================================================================
 
-def is_blacklisted(meta, blacklist):
-    """
-    Проверяем blacklist не только по host,
-    а по host + remark + полному URI.
-    """
-
-    searchable_text = " ".join(
+def is_blacklisted(
+    meta,
+    blacklist
+):
+    searchable = " ".join(
         [
-            meta.get("host", ""),
-            meta.get("remark", ""),
-            meta.get("raw", "")
+            meta.get(
+                "host",
+                ""
+            ),
+            meta.get(
+                "remark",
+                ""
+            ),
+            meta.get(
+                "raw",
+                ""
+            )
         ]
     ).lower()
 
-    for entry in blacklist:
-        entry = entry.strip().lower()
+    for item in blacklist:
+        item = item.strip().lower()
 
-        if not entry:
+        if not item:
             continue
 
-        if entry in searchable_text:
+        if item in searchable:
             return True
 
     return False
 
 
-# --------------------------------------------------------------------------
-# Xray
-# --------------------------------------------------------------------------
+# ==========================================================================
+# ОБХОДЫ WHITE LIST
+# ==========================================================================
+
+def is_bypass_config(meta):
+    text = (
+        f"{meta.get('remark', '')} "
+        f"{meta.get('raw', '')}"
+    ).lower()
+
+    bypass_words = (
+        "обход",
+        "bypass",
+        "white-list-bypass",
+        "whitelist-bypass",
+        "white list bypass",
+    )
+
+    return any(
+        word in text
+        for word in bypass_words
+    )
+
+
+# ==========================================================================
+# XRAY
+# ==========================================================================
 
 def build_xray_config(
     outbound,
@@ -690,6 +919,35 @@ def build_xray_config(
     }
 
 
+def http_probe(
+    proxies,
+    timeout
+):
+    started = time.time()
+
+    response = requests.get(
+        TEST_URL,
+        proxies=proxies,
+        timeout=timeout
+    )
+
+    latency = round(
+        (
+            time.time()
+            - started
+        ) * 1000
+    )
+
+    return (
+        response.status_code in (
+            200,
+            204
+        ),
+        latency,
+        response.status_code
+    )
+
+
 def test_one(
     xray_bin,
     meta,
@@ -699,16 +957,6 @@ def test_one(
     speed_timeout,
     want_speed
 ):
-    """
-    Реальная проверка через Xray.
-
-    want_speed=False:
-        latency
-
-    want_speed=True:
-        latency + speed
-    """
-
     cfg = build_xray_config(
         outbound,
         socks_port
@@ -738,17 +986,13 @@ def test_one(
                 cfg_path
             ],
             stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
         )
 
         hard_deadline = (
             timeout
-            + (
-                speed_timeout
-                if want_speed
-                else 0
-            )
-            + 8
+            + speed_timeout
+            + 15
         )
 
         proc_ref = proc
@@ -763,7 +1007,6 @@ def test_one(
         )
 
         watchdog.daemon = True
-
         watchdog.start()
 
         time.sleep(1.0)
@@ -774,7 +1017,7 @@ def test_one(
                 "ok": False,
                 "error": "xray_exited",
                 "latency_ms": None,
-                "speed_kbps": None
+                "speed_kbps": None,
             }
 
         proxies = {
@@ -787,114 +1030,138 @@ def test_one(
         }
 
         # --------------------------------------------------------------
-        # Latency test
+        # ПЕРВЫЙ ПРОБНИК
         # --------------------------------------------------------------
 
-        t0 = time.time()
-
-        response = requests.get(
-            TEST_URL,
-            proxies=proxies,
-            timeout=timeout
+        ok1, latency1, status1 = http_probe(
+            proxies,
+            timeout
         )
 
-        latency_ms = round(
+        if not ok1:
+            return {
+                **meta,
+                "ok": False,
+                "error": f"http_{status1}",
+                "latency_ms": latency1,
+                "speed_kbps": None,
+            }
+
+        if not want_speed:
+            return {
+                **meta,
+                "ok": True,
+                "error": None,
+                "latency_ms": latency1,
+                "speed_kbps": None,
+            }
+
+        # --------------------------------------------------------------
+        # ВТОРОЙ ПРОБНИК
+        # --------------------------------------------------------------
+
+        time.sleep(0.2)
+
+        ok2, latency2, status2 = http_probe(
+            proxies,
+            timeout
+        )
+
+        if not ok2:
+            return {
+                **meta,
+                "ok": False,
+                "error": f"second_http_{status2}",
+                "latency_ms": latency1,
+                "speed_kbps": None,
+            }
+
+        average_latency = round(
             (
-                time.time() - t0
-            ) * 1000
+                latency1
+                + latency2
+            ) / 2
         )
 
-        ok = response.status_code in (
-            200,
-            204
-        )
-
-        result = {
-            **meta,
-            "ok": ok,
-            "error": (
-                None
-                if ok
-                else f"http_{response.status_code}"
-            ),
-            "latency_ms": latency_ms,
-            "speed_kbps": None
-        }
-
         # --------------------------------------------------------------
-        # Speed test
+        # SPEED TEST
         # --------------------------------------------------------------
 
-        if ok and want_speed:
-            try:
-                downloaded = 0
+        downloaded = 0
 
-                t1 = time.time()
+        started = time.time()
 
-                with requests.get(
-                    SPEED_TEST_URL,
-                    proxies=proxies,
-                    timeout=speed_timeout,
-                    stream=True
-                ) as speed_response:
+        try:
+            with requests.get(
+                SPEED_TEST_URL,
+                proxies=proxies,
+                timeout=speed_timeout,
+                stream=True
+            ) as response:
 
-                    for chunk in speed_response.iter_content(
-                        chunk_size=32768
-                    ):
-                        if not chunk:
-                            continue
-
-                        downloaded += len(chunk)
-
-                        if (
-                            downloaded
-                            >= SPEED_TEST_BYTES
-                        ):
-                            break
-
-                        if (
-                            time.time()
-                            - t1
-                            > speed_timeout
-                        ):
-                            break
-
-                elapsed = (
-                    time.time()
-                    - t1
-                )
-
-                if (
-                    downloaded > 0
-                    and elapsed > 0
+                for chunk in response.iter_content(
+                    chunk_size=32768
                 ):
-                    speed_kbps = round(
-                        (
-                            downloaded
-                            / 1024
-                        )
-                        / elapsed,
-                        1
+                    if not chunk:
+                        continue
+
+                    downloaded += len(
+                        chunk
                     )
 
-                    result["speed_kbps"] = speed_kbps
+                    if downloaded >= SPEED_TEST_BYTES:
+                        break
 
-                else:
-                    result["ok"] = False
+                    if (
+                        time.time()
+                        - started
+                        > speed_timeout
+                    ):
+                        break
 
-                    result["error"] = (
-                        "speed_test_empty"
-                    )
-
-            except Exception as e:
-                result["ok"] = False
-
-                result["error"] = (
+        except Exception as e:
+            return {
+                **meta,
+                "ok": False,
+                "error": (
                     "speed_test_failed:"
-                    + str(e)[:60]
-                )
+                    + str(e)[:80]
+                ),
+                "latency_ms": average_latency,
+                "speed_kbps": None,
+            }
 
-        return result
+        elapsed = (
+            time.time()
+            - started
+        )
+
+        if (
+            downloaded <= 0
+            or elapsed <= 0
+        ):
+            return {
+                **meta,
+                "ok": False,
+                "error": "speed_test_empty",
+                "latency_ms": average_latency,
+                "speed_kbps": None,
+            }
+
+        speed_kbps = round(
+            (
+                downloaded / 1024
+            ) / elapsed,
+            1
+        )
+
+        return {
+            **meta,
+            "ok": True,
+            "error": None,
+            "latency_ms": average_latency,
+            "speed_kbps": speed_kbps,
+        }
 
     except Exception as e:
         return {
@@ -902,7 +1169,7 @@ def test_one(
             "ok": False,
             "error": str(e)[:120],
             "latency_ms": None,
-            "speed_kbps": None
+            "speed_kbps": None,
         }
 
     finally:
@@ -949,7 +1216,9 @@ def _test_one_with_port(
         )
 
     finally:
-        port_pool.put(port)
+        port_pool.put(
+            port
+        )
 
 
 def run_round(
@@ -960,10 +1229,6 @@ def run_round(
     speed_timeout,
     want_speed
 ):
-    """
-    Тестирует список конфигов параллельно.
-    """
-
     port_pool = queue.Queue()
 
     for i in range(workers):
@@ -975,10 +1240,10 @@ def run_round(
 
     with ThreadPoolExecutor(
         max_workers=workers
-    ) as pool:
+    ) as executor:
 
         futures = [
-            pool.submit(
+            executor.submit(
                 _test_one_with_port,
                 xray_bin,
                 meta,
@@ -988,7 +1253,9 @@ def run_round(
                 speed_timeout,
                 want_speed
             )
-            for meta, outbound in items
+
+            for meta, outbound
+            in items
         ]
 
         for future in as_completed(
@@ -1001,9 +1268,169 @@ def run_round(
     return results
 
 
-# --------------------------------------------------------------------------
-# Категории
-# --------------------------------------------------------------------------
+# ==========================================================================
+# СТРАНА
+# ==========================================================================
+
+def detect_country_from_text(
+    text
+):
+    text = (
+        text
+        .replace("_", " ")
+        .replace("-", " ")
+        .lower()
+    )
+
+    for alias, code in sorted(
+        COUNTRY_ALIASES.items(),
+        key=lambda x: len(x[0]),
+        reverse=True
+    ):
+        if alias in text:
+            return code
+
+    # Флаги
+    for code, flag in COUNTRY_FLAGS.items():
+        if flag in text:
+            return code
+
+    return None
+
+
+def resolve_country_ip(
+    host,
+    cache
+):
+    host = host.strip()
+
+    if host in cache:
+        return cache[host]
+
+    try:
+        ip = socket.gethostbyname(
+            host
+        )
+
+        response = requests.get(
+            f"https://ipwho.is/{ip}",
+            timeout=4
+        )
+
+        data = response.json()
+
+        if data.get("success") is False:
+            cache[host] = None
+            return None
+
+        country_code = (
+            data.get("country_code")
+            or ""
+        ).upper()
+
+        if len(country_code) != 2:
+            cache[host] = None
+            return None
+
+        cache[host] = country_code
+
+        return country_code
+
+    except Exception:
+        cache[host] = None
+        return None
+
+
+def assign_countries(
+    results,
+    country_cache
+):
+    for result in results:
+        code = detect_country_from_text(
+            result.get(
+                "remark",
+                ""
+            )
+        )
+
+        if code is None:
+            code = detect_country_from_text(
+                result.get(
+                    "raw",
+                    ""
+                )
+            )
+
+        if code is None:
+            code = resolve_country_ip(
+                result.get(
+                    "host",
+                    ""
+                ),
+                country_cache
+            )
+
+        if code is None:
+            result["country_code"] = "UN"
+            result["country_name"] = (
+                "Неизвестная страна"
+            )
+            result["country_flag"] = "🌐"
+
+        else:
+            result["country_code"] = code
+
+            result["country_name"] = (
+                COUNTRY_NAMES_RU.get(
+                    code,
+                    code
+                )
+            )
+
+            result["country_flag"] = (
+                COUNTRY_FLAGS.get(
+                    code,
+                    "🌐"
+                )
+            )
+
+
+# ==========================================================================
+# НАЗВАНИЕ
+# ==========================================================================
+
+def make_country_title(
+    result
+):
+    return (
+        f"{result['country_flag']} "
+        f"{result['country_name']}"
+    )
+
+
+def rename_uri(
+    uri,
+    title
+):
+    base_uri = uri.split(
+        "#",
+        1
+    )[0]
+
+    encoded_title = urllib.parse.quote(
+        title,
+        safe=""
+    )
+
+    return (
+        f"{base_uri}"
+        f"#{encoded_title}"
+    )
+
+
+# ==========================================================================
+# ЗАГРУЗКА КАТЕГОРИИ
+# ==========================================================================
 
 def load_category(
     sources_path,
@@ -1011,15 +1438,6 @@ def load_category(
     category,
     blacklist
 ):
-    """
-    Загружает источники и manual-файл.
-
-    ВАЖНО:
-    manual-файл НЕ имеет никаких привилегий.
-    Он проходит те же тесты, что и конфиги
-    из обычных источников.
-    """
-
     sources = load_lines(
         sources_path
     )
@@ -1028,62 +1446,52 @@ def load_category(
         manual_path
     )
 
-    # --------------------------------------------------------------
-    # Все конфиги собираем в единый список
-    # --------------------------------------------------------------
-
     raw_uris = []
 
+    # Сначала реальные источники
     for source in sources:
         raw_uris.extend(
             fetch_source(source)
         )
 
+    # Manual НЕ получает привилегий.
+    # Он просто добавляет конфиги в общий пул.
     raw_uris.extend(
         manual_uris
     )
 
     print(
-        f"[i] [{category}] raw configs collected: "
+        f"[i] [{category}] "
+        f"raw configs: "
         f"{len(raw_uris)}"
     )
-
-    # --------------------------------------------------------------
-    # Парсинг + blacklist + dedupe
-    # --------------------------------------------------------------
 
     parsed = []
 
     seen = set()
 
-    blacklist_count = 0
-    parse_failed_count = 0
-    duplicate_count = 0
+    skipped_blacklist = 0
+    skipped_parse = 0
+    skipped_duplicate = 0
 
     for uri in raw_uris:
 
-        result = parse_uri(uri)
+        result = parse_uri(
+            uri
+        )
 
         if not result:
-            parse_failed_count += 1
+            skipped_parse += 1
             continue
 
         meta, outbound = result
-
-        # ----------------------------------------------------------
-        # BLACKLIST
-        # ----------------------------------------------------------
 
         if is_blacklisted(
             meta,
             blacklist
         ):
-            blacklist_count += 1
+            skipped_blacklist += 1
             continue
-
-        # ----------------------------------------------------------
-        # Более разумный ключ дедупликации
-        # ----------------------------------------------------------
 
         key = (
             meta["proto"],
@@ -1092,15 +1500,21 @@ def load_category(
         )
 
         if key in seen:
-            duplicate_count += 1
+            skipped_duplicate += 1
             continue
 
-        seen.add(key)
+        seen.add(
+            key
+        )
 
         meta["category"] = category
 
-        # Никаких pinned!
-        meta["pinned"] = False
+        meta["is_bypass"] = (
+            category == "white"
+            and is_bypass_config(
+                meta
+            )
+        )
 
         parsed.append(
             (
@@ -1110,153 +1524,184 @@ def load_category(
         )
 
     print(
-        f"[i] [{category}] unique configs after filtering: "
-        f"{len(parsed)}"
+        f"[i] [{category}] "
+        f"unique: {len(parsed)}"
     )
 
     print(
-        f"[i] [{category}] blacklist removed: "
-        f"{blacklist_count}"
+        f"[i] [{category}] "
+        f"blacklist: {skipped_blacklist}"
     )
 
     print(
-        f"[i] [{category}] parse failed: "
-        f"{parse_failed_count}"
+        f"[i] [{category}] "
+        f"parse failed: {skipped_parse}"
     )
 
     print(
-        f"[i] [{category}] duplicates removed: "
-        f"{duplicate_count}"
+        f"[i] [{category}] "
+        f"duplicates: {skipped_duplicate}"
     )
+
+    bypass_count = sum(
+        1
+        for meta, _
+        in parsed
+        if meta.get(
+            "is_bypass",
+            False
+        )
+    )
+
+    if category == "white":
+        print(
+            f"[i] [{category}] "
+            f"bypass configs found: "
+            f"{bypass_count}"
+        )
 
     return parsed
 
 
-# --------------------------------------------------------------------------
-# Переименование
-# --------------------------------------------------------------------------
+# ==========================================================================
+# SCORE
+# ==========================================================================
 
-def rename_uri(
-    uri,
-    index
+def calculate_score(
+    speed_kbps,
+    latency_ms
 ):
-    """
-    Полностью удаляет старое название #remark
-    и ставит новое.
-    """
+    if (
+        speed_kbps is None
+        or latency_ms is None
+    ):
+        return 0.0
 
-    base_uri = uri.split(
-        "#",
-        1
-    )[0]
+    # Чем выше скорость — тем лучше.
+    # Чем ниже latency — тем лучше.
+    #
+    # +50 нужен, чтобы маленькие различия
+    # в latency не делали рейтинг слишком резким.
 
-    return (
-        f"{base_uri}"
-        f"#Tuskone%20VPN%20{index:02d}"
+    return round(
+        (
+            speed_kbps
+            * 250
+            / (latency_ms + 50)
+        ),
+        2
     )
 
 
-# --------------------------------------------------------------------------
-# main
-# --------------------------------------------------------------------------
+# ==========================================================================
+# MAIN
+# ==========================================================================
 
 def main():
 
-    ap = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-    ap.add_argument(
+    parser.add_argument(
         "--sources",
         default="sources.txt"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--manual",
         default="manual.txt"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--sources-white",
         default="sources_whitelist.txt"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--manual-white",
         default="manual_whitelist.txt"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--blacklist",
         default="blacklist.txt"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--xray-bin",
         default="./xray"
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--workers",
         type=int,
-        default=15
+        default=20
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--timeout",
         type=float,
-        default=6.0,
-        help="таймаут пинг-проверки"
+        default=6.0
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--speed-timeout",
         type=float,
-        default=8.0,
-        help="таймаут проверки скорости"
+        default=8.0
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--round-gap",
         type=float,
-        default=30.0,
-        help="пауза между раундами"
+        default=30.0
     )
 
-    ap.add_argument(
+    # Обычные конфиги
+    parser.add_argument(
         "--max-latency-ms",
         type=float,
-        default=250.0,
-        help="максимальная задержка"
+        default=250.0
     )
 
-    ap.add_argument(
+    parser.add_argument(
         "--min-speed-kbps",
         type=float,
-        default=1000.0,
-        help="минимальная скорость"
+        default=1000.0
     )
 
-    ap.add_argument(
+    # Сколько обычных конфигов публиковать
+    parser.add_argument(
         "--max-output",
         type=int,
-        default=10,
-        help="сколько конфигов оставлять"
+        default=10
     )
 
-    ap.add_argument(
+    # Специальный лимит для обходов
+    parser.add_argument(
+        "--bypass-output",
+        type=int,
+        default=3
+    )
+
+    # Более мягкий, но всё ещё строгий
+    # порог именно для обходов whitelist
+    parser.add_argument(
+        "--bypass-max-latency-ms",
+        type=float,
+        default=500.0
+    )
+
+    parser.add_argument(
+        "--bypass-min-speed-kbps",
+        type=float,
+        default=200.0
+    )
+
+    parser.add_argument(
         "--outdir",
         default="output"
     )
 
-    ap.add_argument(
-        "--skip-test",
-        action="store_true",
-        help=(
-            "опубликовать manual-файлы без теста; "
-            "не используется обычным workflow"
-        )
-    )
-
-    args = ap.parse_args()
+    args = parser.parse_args()
 
     os.makedirs(
         args.outdir,
@@ -1267,7 +1712,6 @@ def main():
         args.blacklist
     )
 
-    # Защита от зависания сетевых запросов
     socket.setdefaulttimeout(
         max(
             args.timeout,
@@ -1276,103 +1720,7 @@ def main():
     )
 
     # ------------------------------------------------------------------
-    # SKIP TEST
-    # ------------------------------------------------------------------
-
-    if args.skip_test:
-        print(
-            "[i] --skip-test включён."
-        )
-
-        for category in (
-            "normal",
-            "white"
-        ):
-
-            if category == "normal":
-                manual_path = args.manual
-            else:
-                manual_path = args.manual_white
-
-            manual_uris = load_lines(
-                manual_path
-            )
-
-            seen = set()
-
-            final_lines = []
-
-            for uri in manual_uris:
-
-                result = parse_uri(uri)
-
-                if not result:
-                    print(
-                        f"[!] [{category}] "
-                        f"не разобрано: "
-                        f"{uri[:80]}..."
-                    )
-                    continue
-
-                meta, _ = result
-
-                if is_blacklisted(
-                    meta,
-                    blacklist
-                ):
-                    continue
-
-                key = (
-                    meta["proto"],
-                    meta["host"].lower(),
-                    meta["port"]
-                )
-
-                if key in seen:
-                    continue
-
-                seen.add(key)
-
-                final_lines.append(
-                    uri
-                )
-
-            sub_b64 = base64.b64encode(
-                "\n".join(
-                    final_lines
-                ).encode("utf-8")
-            ).decode("utf-8")
-
-            suffix = (
-                ""
-                if category == "normal"
-                else "_whitelist"
-            )
-
-            sub_path = os.path.join(
-                args.outdir,
-                f"subscription{suffix}.txt"
-            )
-
-            with open(
-                sub_path,
-                "w",
-                encoding="utf-8"
-            ) as f:
-                f.write(
-                    sub_b64
-                )
-
-            print(
-                f"[i] [{category}] "
-                f"опубликовано без теста: "
-                f"{len(final_lines)} -> {sub_path}"
-            )
-
-        return
-
-    # ------------------------------------------------------------------
-    # Загрузка двух категорий
+    # LOAD
     # ------------------------------------------------------------------
 
     normal_items = load_category(
@@ -1396,18 +1744,18 @@ def main():
 
     if not all_items:
         print(
-            "[!] Нет ни одного конфига "
-            "для проверки."
+            "[!] Нет конфигов."
         )
         return
 
     # ------------------------------------------------------------------
-    # RAUND 1
+    # ROUND 1
     # ------------------------------------------------------------------
 
     print(
-        f"[i] Раунд 1 (latency): "
-        f"проверяю {len(all_items)} конфигов..."
+        f"[i] Раунд 1: "
+        f"проверяю "
+        f"{len(all_items)} конфигов..."
     )
 
     round1 = run_round(
@@ -1416,30 +1764,55 @@ def main():
         args.workers,
         args.timeout,
         args.speed_timeout,
-        want_speed=False
+        False
     )
 
-    round1_ok = {
-        (
-            result["proto"],
-            result["host"],
-            result["port"]
+    round1_ok = set()
+
+    for result in round1:
+
+        if not result.get(
+            "ok",
+            False
+        ):
+            continue
+
+        latency = result.get(
+            "latency_ms"
         )
-        for result in round1
-        if (
-            result["ok"]
-            and result["latency_ms"] is not None
-            and result["latency_ms"]
-            <= args.max_latency_ms
+
+        if latency is None:
+            continue
+
+        is_bypass = result.get(
+            "is_bypass",
+            False
         )
-    }
+
+        # Для bypass отдельный предел latency
+        if is_bypass:
+            allowed_latency = (
+                args.bypass_max_latency_ms
+            )
+        else:
+            allowed_latency = (
+                args.max_latency_ms
+            )
+
+        if latency <= allowed_latency:
+            round1_ok.add(
+                (
+                    result["proto"],
+                    result["host"],
+                    result["port"]
+                )
+            )
 
     print(
         f"[i] Раунд 1: "
-        f"прошли {len(round1_ok)}/"
-        f"{len(all_items)} "
-        f"(latency <= "
-        f"{args.max_latency_ms} ms)"
+        f"прошли "
+        f"{len(round1_ok)}/"
+        f"{len(all_items)}"
     )
 
     survivors = [
@@ -1448,7 +1821,8 @@ def main():
             outbound
         )
 
-        for meta, outbound in all_items
+        for meta, outbound
+        in all_items
 
         if (
             meta["proto"],
@@ -1457,18 +1831,13 @@ def main():
         ) in round1_ok
     ]
 
-    # ------------------------------------------------------------------
-    # Пауза
-    # ------------------------------------------------------------------
-
     if (
         survivors
         and args.round_gap > 0
     ):
         print(
             f"[i] Жду "
-            f"{args.round_gap:.0f} сек "
-            f"перед вторым раундом..."
+            f"{args.round_gap:.0f} сек..."
         )
 
         time.sleep(
@@ -1476,13 +1845,12 @@ def main():
         )
 
     # ------------------------------------------------------------------
-    # RAUND 2
+    # ROUND 2
     # ------------------------------------------------------------------
 
     print(
-        f"[i] Раунд 2 "
-        f"(latency + speed): "
-        f"проверяю "
+        f"[i] Раунд 2: "
+        f"latency + speed: "
         f"{len(survivors)} конфигов..."
     )
 
@@ -1492,76 +1860,114 @@ def main():
         args.workers,
         args.timeout,
         args.speed_timeout,
-        want_speed=True
+        True
     )
 
     # ------------------------------------------------------------------
-    # Финальная фильтрация
+    # FINAL FILTER
     # ------------------------------------------------------------------
 
-    final_ok = [
-        result
+    final_ok = []
 
-        for result in round2
+    for result in round2:
+
+        if not result.get(
+            "ok",
+            False
+        ):
+            continue
+
+        latency = result.get(
+            "latency_ms"
+        )
+
+        speed = result.get(
+            "speed_kbps"
+        )
 
         if (
-            result["ok"]
+            latency is None
+            or speed is None
+        ):
+            continue
 
-            and result["latency_ms"] is not None
-
-            and result["latency_ms"]
-            <= args.max_latency_ms
-
-            and result["speed_kbps"] is not None
-
-            and result["speed_kbps"]
-            >= args.min_speed_kbps
+        is_bypass = result.get(
+            "is_bypass",
+            False
         )
-    ]
 
-    print(
-        f"[i] Раунд 2: "
-        f"подтвердили "
-        f"{len(final_ok)}/"
-        f"{len(survivors)} "
-        f"конфигов."
+        if is_bypass:
+            max_latency = (
+                args.bypass_max_latency_ms
+            )
+
+            min_speed = (
+                args.bypass_min_speed_kbps
+            )
+
+        else:
+            max_latency = (
+                args.max_latency_ms
+            )
+
+            min_speed = (
+                args.min_speed_kbps
+            )
+
+        if latency > max_latency:
+            continue
+
+        if speed < min_speed:
+            continue
+
+        result["quality_score"] = (
+            calculate_score(
+                speed,
+                latency
+            )
+        )
+
+        final_ok.append(
+            result
+        )
+
+    # ------------------------------------------------------------------
+    # COUNTRY DETECTION
+    # ------------------------------------------------------------------
+
+    country_cache = {}
+
+    assign_countries(
+        final_ok,
+        country_cache
     )
 
     # ------------------------------------------------------------------
-    # Сортировка
+    # SORT
     # ------------------------------------------------------------------
 
     final_ok.sort(
-        key=lambda result: (
-            -result["speed_kbps"],
-            result["latency_ms"]
+        key=lambda x: (
+            -x.get(
+                "quality_score",
+                0
+            ),
+            x.get(
+                "latency_ms",
+                999999
+            ),
+            -x.get(
+                "speed_kbps",
+                0
+            )
         )
     )
 
     # ------------------------------------------------------------------
-    # Report
+    # REPORT
     # ------------------------------------------------------------------
 
     report = {
-        "round1": sorted(
-            round1,
-            key=lambda result: (
-                not result["ok"],
-                result["latency_ms"]
-                if result["latency_ms"]
-                is not None
-                else 999999
-            )
-        ),
-
-        "round2": sorted(
-            round2,
-            key=lambda result: (
-                not result["ok"],
-                -(result["speed_kbps"] or 0)
-            )
-        ),
-
         "settings": {
             "max_latency_ms": (
                 args.max_latency_ms
@@ -1572,22 +1978,29 @@ def main():
             "max_output": (
                 args.max_output
             ),
-            "workers": (
-                args.workers
+            "bypass_output": (
+                args.bypass_output
             ),
-            "round_gap": (
-                args.round_gap
-            )
-        }
+            "bypass_max_latency_ms": (
+                args.bypass_max_latency_ms
+            ),
+            "bypass_min_speed_kbps": (
+                args.bypass_min_speed_kbps
+            ),
+        },
+
+        "round1": round1,
+
+        "round2": round2,
+
+        "final": final_ok,
     }
 
-    report_path = os.path.join(
-        args.outdir,
-        "report.json"
-    )
-
     with open(
-        report_path,
+        os.path.join(
+            args.outdir,
+            "report.json"
+        ),
         "w",
         encoding="utf-8"
     ) as f:
@@ -1599,7 +2012,7 @@ def main():
         )
 
     # ------------------------------------------------------------------
-    # Создание подписок
+    # BUILD SUBSCRIPTIONS
     # ------------------------------------------------------------------
 
     for category in (
@@ -1607,40 +2020,110 @@ def main():
         "white"
     ):
 
-        # Только успешно прошедшие тесты.
-        category_best = [
+        category_results = [
             result
-
             for result in final_ok
-
-            if result["category"]
-            == category
+            if result.get(
+                "category"
+            ) == category
         ]
 
-        # Ограничиваем количество.
-        category_best = category_best[
-            :args.max_output
-        ]
+        if category == "normal":
 
-        # --------------------------------------------------------------
-        # Переименовываем КАЖДЫЙ конфиг
-        # --------------------------------------------------------------
+            selected = [
+                result
+                for result
+                in category_results
+                if not result.get(
+                    "is_bypass",
+                    False
+                )
+            ]
 
-        final_lines = [
-            rename_uri(
-                result["raw"],
-                index
+            selected = selected[
+                :args.max_output
+            ]
+
+        else:
+
+            # ----------------------------------------------------------
+            # WHITE:
+            # обычные конфиги + отдельная квота обходов
+            # ----------------------------------------------------------
+
+            regular = [
+                result
+                for result
+                in category_results
+                if not result.get(
+                    "is_bypass",
+                    False
+                )
+            ]
+
+            bypass = [
+                result
+                for result
+                in category_results
+                if result.get(
+                    "is_bypass",
+                    False
+                )
+            ]
+
+            bypass = bypass[
+                :args.bypass_output
+            ]
+
+            regular_slots = max(
+                0,
+                args.max_output
+                - len(bypass)
             )
 
-            for index, result
-            in enumerate(
-                category_best,
-                start=1
+            regular = regular[
+                :regular_slots
+            ]
+
+            selected = (
+                regular
+                + bypass
             )
-        ]
+
+            selected.sort(
+                key=lambda x: (
+                    -x.get(
+                        "quality_score",
+                        0
+                    ),
+                    x.get(
+                        "latency_ms",
+                        999999
+                    )
+                )
+            )
 
         # --------------------------------------------------------------
-        # Base64
+        # НАЗВАНИЯ
+        # --------------------------------------------------------------
+
+        final_lines = []
+
+        for result in selected:
+
+            title = make_country_title(
+                result
+            )
+
+            final_lines.append(
+                rename_uri(
+                    result["raw"],
+                    title
+                )
+            )
+
+        # --------------------------------------------------------------
+        # BASE64
         # --------------------------------------------------------------
 
         sub_b64 = base64.b64encode(
@@ -1669,22 +2152,84 @@ def main():
                 sub_b64
             )
 
+        # --------------------------------------------------------------
+        # СТАТИСТИКА ПО СТРАНАМ
+        # --------------------------------------------------------------
+
+        countries = {}
+
+        for result in selected:
+
+            country_title = (
+                f"{result['country_flag']} "
+                f"{result['country_name']}"
+            )
+
+            countries[country_title] = (
+                countries.get(
+                    country_title,
+                    0
+                )
+                + 1
+            )
+
+        print("")
         print(
-            f"[i] [{category}] "
-            f"опубликовано "
-            f"{len(final_lines)} "
-            f"лучших конфигов "
-            f"-> {sub_path}"
+            "=================================================="
         )
 
-        if not final_lines:
-            print(
-                f"[!] [{category}] "
-                f"подписка пустая. "
-                f"Все конфиги не прошли "
-                f"строгую проверку."
+        print(
+            f"[i] [{category}] "
+            f"ИТОГ: "
+            f"{len(selected)} конфигов"
+        )
+
+        print(
+            f"[i] [{category}] "
+            f"Файл: {sub_path}"
+        )
+
+        print(
+            f"[i] [{category}] "
+            f"Страны:"
+        )
+
+        for country, count in sorted(
+            countries.items(),
+            key=lambda x: (
+                -x[1],
+                x[0]
             )
+        ):
+            print(
+                f"    {country}: "
+                f"{count}"
+            )
+
+        if category == "white":
+
+            bypass_selected = sum(
+                1
+                for result
+                in selected
+                if result.get(
+                    "is_bypass",
+                    False
+                )
+            )
+
+            print(
+                f"[i] [{category}] "
+                f"Обходов в подписке: "
+                f"{bypass_selected}"
+            )
+
+        print(
+            "=================================================="
+        )
+        print("")
 
 
 if __name__ == "__main__":
     main()
+```
