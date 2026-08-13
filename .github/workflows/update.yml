@@ -38,7 +38,7 @@ jobs:
           chmod +x xray_bin/xray
 
       - name: Test configs & build subscriptions
-        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 20 --max-latency-ms 350 --min-speed-kbps 250 --round-gap 30
+        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 10 --max-latency-ms 250 --min-speed-kbps 1000 --round-gap 30
 
       - name: Commit updated subscription
         run: |
