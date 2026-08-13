@@ -36,6 +36,7 @@ import socket
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -287,11 +288,23 @@ def test_one(xray_bin, meta, outbound, socks_port, timeout, speed_timeout, want_
         cfg_path = f.name
 
     proc = None
+    watchdog = None
     try:
         proc = subprocess.Popen(
             [xray_bin, "run", "-c", cfg_path],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
+
+        # Жёсткий сторож: что бы ни случилось на сетевом уровне ниже (даже
+        # если requests/SOCKS почему-то не соблюдёт свой timeout), Xray
+        # будет убит не позже этого срока — поток гарантированно не зависнет
+        # дольше этой границы.
+        hard_deadline = timeout + (speed_timeout if want_speed else 0) + 8
+        proc_ref = proc
+        watchdog = threading.Timer(hard_deadline, lambda: proc_ref.kill() if proc_ref.poll() is None else None)
+        watchdog.daemon = True
+        watchdog.start()
+
         time.sleep(1.0)  # даём Xray время подняться
         if proc.poll() is not None:
             return {**meta, "ok": False, "error": "xray_exited", "latency_ms": None, "speed_kbps": None}
@@ -330,13 +343,29 @@ def test_one(xray_bin, meta, outbound, socks_port, timeout, speed_timeout, want_
     except Exception as e:
         return {**meta, "ok": False, "error": str(e)[:120], "latency_ms": None, "speed_kbps": None}
     finally:
+        if watchdog is not None:
+            watchdog.cancel()
         if proc is not None:
-            proc.kill()
-            proc.wait(timeout=5)
+            try:
+                proc.kill()
+                proc.wait(timeout=5)
+            except Exception:
+                pass  # процесс мог уже умереть сам (например, от сторожа) — это не ошибка
         try:
             os.unlink(cfg_path)
         except OSError:
             pass
+
+
+def _test_one_with_port(xray_bin, meta, outbound, port_pool, timeout, speed_timeout, want_speed):
+    """Обёртка: берёт свободный порт САМА, изнутри рабочего потока — это и есть
+    исправление. Раньше порт забирался в потоке, который раздавал задания,
+    из-за чего при items > workers наступал дедлок (см. историю правок)."""
+    port = port_pool.get()
+    try:
+        return test_one(xray_bin, meta, outbound, port, timeout, speed_timeout, want_speed)
+    finally:
+        port_pool.put(port)
 
 
 def run_round(xray_bin, items, workers, timeout, speed_timeout, want_speed):
@@ -347,14 +376,12 @@ def run_round(xray_bin, items, workers, timeout, speed_timeout, want_speed):
 
     results = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        futures = {}
-        for meta, outbound in items:
-            port = port_pool.get()
-            fut = pool.submit(test_one, xray_bin, meta, outbound, port, timeout, speed_timeout, want_speed)
-            futures[fut] = port
+        futures = [
+            pool.submit(_test_one_with_port, xray_bin, meta, outbound, port_pool, timeout, speed_timeout, want_speed)
+            for meta, outbound in items
+        ]
         for fut in as_completed(futures):
             results.append(fut.result())
-            port_pool.put(futures[fut])
     return results
 
 
