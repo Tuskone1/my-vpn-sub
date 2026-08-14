@@ -1,4 +1,4 @@
-#profile-title: base64:VHVza29uZSBWUE4=
+#profile-title: base64:8J2QICBUdXNrb25lIFZQTg==
 #profile-update-interval: 1
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
