@@ -30,10 +30,10 @@
     },
     {
       "proto": "vless",
-      "host": "ufivadetb.mvp-rk.site",
+      "host": "fin3.o4ka-internet.com",
       "port": 443,
-      "remark": "🇫🇮 Финляндия | TLS",
-      "raw": "vless://521fc84d-be38-4973-b89a-df5375062aea@ufivadetb.mvp-rk.site:443?type=tcp&security=tls&encryption=none&sni=ufivadetb.mvp-rk.site&flow=xtls-rprx-vision&alpn=http%2F1.1#🇫🇮 Финляндия | TLS",
+      "remark": "🇫🇮 Финляндия | Reality",
+      "raw": "vless://2cb6b4d9-0c74-45e2-a4fb-645bb8ac532a@fin3.o4ka-internet.com:443?encryption=none&type=tcp&security=reality&flow=xtls-rprx-vision&sni=fin3.o4ka-internet.com&pbk=V2JprbR_aJkS7uX6anyU3nrswGxdvDQT2HpY4WnzuC8&sid=5629431325884ff0&fp=random#🇫🇮 Финляндия | Reality",
       "category": "normal",
       "is_manual": true,
       "is_bypass": false,
@@ -135,6 +135,24 @@
       "country_code": "IN",
       "country_name": "Индия",
       "country_flag": "🇮🇳"
+    },
+    {
+      "proto": "vless",
+      "host": "riz.goober.surf",
+      "port": 443,
+      "remark": "🇪🇺 Авто обход",
+      "raw": "vless://2cb6b4d9-0c74-45e2-a4fb-645bb8ac532a@riz.goober.surf:443?encryption=none&type=xhttp&security=tls&sni=riz.goober.surf&path=/media/feed/preview/&host=riz.goober.surf&mode=packet-up&extra={\"xmux\":{\"cMaxLifetimeMs\":0,\"cMaxReuseTimes\":\"64-128\",\"maxConcurrency\":\"48-96\",\"maxConnections\":0,\"hMaxRequestTimes\":\"600-1000\",\"hMaxReusableSecs\":\"1800-3600\"},\"seqKey\":\"segment\",\"sessionKey\":\"sess_id\",\"xPaddingKey\":\"_t\",\"seqPlacement\":\"query\",\"sessionIDKey\":\"sess_id\",\"uplinkDataKey\":\"X-Playback-Token\",\"xPaddingBytes\":\"1-32\",\"xPaddingHeader\":\"X-Media-Token\",\"xPaddingMethod\":\"tokenish\",\"sessionIDLength\":\"5-8\",\"uplinkChunkSize\":0,\"sessionPlacement\":\"query\",\"uplinkHTTPMethod\":\"GET\",\"xPaddingObfsMode\":true,\"xPaddingPlacement\":\"header\",\"scMaxEachPostBytes\":1000000,\"sessionIDPlacement\":\"query\",\"uplinkDataPlacement\":\"body\",\"serverMaxHeaderBytes\":50000}#🇪🇺 Авто обход",
+      "category": "normal",
+      "is_manual": true,
+      "is_bypass": false,
+      "ok": true,
+      "error": null,
+      "latency_ms": 0,
+      "speed_kbps": 0,
+      "quality_score": 0.0,
+      "country_code": "US",
+      "country_name": "США",
+      "country_flag": "🇺🇸"
     },
     {
       "proto": "vless",
