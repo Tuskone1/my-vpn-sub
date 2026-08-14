@@ -1,6 +1,6 @@
 #profile-title: base64:8J+QhyBUdXNrb25lIFZQTg==
 #profile-update-interval: 1
-#announce: base64:0JjRgdC/0L7Qu9GM0LfRg9C50YLQtSDQutC+0L3RhNC40LMg0YLQvtC70YzRutC+INC/0YDQuCDRgdCx0L7Rj9GFINC80L7QsdC40LvRjNC90L7QuSDRgdC10YLQuC4g0J_QvtC20LDQu9GD0LnRgdGC0LAsINC90LUg0YHQutCw0YfQuNCy0LDQvdC40YLQtSDRgtC-0YDRgNC10L3RgtGLINGH0LXRgNC10LcgVlBOLg==
+#announce: Используйте конфиг обхода только при сбоях мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
 hysteria2://3836375f-5d75-4546-8439-c0ebd8b6ca4c@194.55.239.126:20443?sni=hy.quattro-tech.ru#🇩🇪 Германия | Hysteria
