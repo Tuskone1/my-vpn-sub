@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
-vless://2cb6b4d9-0c74-45e2-a4fb-645bb8ac532a@fin3.o4ka-internet.com:443?encryption=none&type=tcp&security=reality&flow=xtls-rprx-vision&sni=fin3.o4ka-internet.com&pbk=V2JprbR_aJkS7uX6anyU3nrswGxdvDQT2HpY4WnzuC8&sid=5629431325884ff0&fp=random#🇫🇮 Финляндия | Reality
+vless://06d44c57-8e1a-41f4-b9c4-65d35869e078@2.57.242.77:13868?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=8SX8GXMe3lXOyY_acO4HFXXYJn_rOOf4zkYFrifV1Tk&sid=e852dc&sni=www.epicgames.com#🇫🇮 Финляндия | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.251.236:443?encryption=none&security=reality&sni=qwen-01.rita-cloud.com&fp=firefox&pbk=il8g5ZwAs34K1DjDzgAFB3uZfCgLwb2TV1065NaKOCg&sid=2754272e4c90658c&type=tcp&flow=xtls-rprx-vision#🇰🇿 Казахстан | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.252.118:443?encryption=none&security=reality&sni=ir-012.rita-cloud.com&fp=firefox&pbk=rqxv2mDuaBynNjatS49r8sjoxv3u2EjAWHzKFwF-YTE&sid=6fa5d699cc6a6b66&type=tcp&flow=xtls-rprx-vision#🇳🇱 Нидерланды | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇬🇧 Великобритания | Reality
