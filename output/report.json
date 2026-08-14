@@ -102,10 +102,10 @@
     },
     {
       "proto": "vless",
-      "host": "ofrihonna.mvp-rk.site",
+      "host": "212.69.86.187",
       "port": 443,
       "remark": "🇫🇷 Франция | TLS",
-      "raw": "vless://959e3b98-cff9-46ec-84ea-690ee53692f5@ofrihonna.mvp-rk.site:443?type=tcp&security=tls&encryption=none&sni=ofrihonna.mvp-rk.site&flow=xtls-rprx-vision&alpn=http%2F1.1#🇫🇷 Франция | TLS",
+      "raw": "vless://7e760d89-a8f4-4a87-8f10-b4af28c61b7f@212.69.86.187:443?type=tcp&security=tls&fp=firefox&sni=cdn.intercom-home.online&alpn=h2&flow=xtls-rprx-vision#🇫🇷 Франция | TLS",
       "category": "normal",
       "is_manual": true,
       "is_bypass": false,
