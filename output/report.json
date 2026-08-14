@@ -30,10 +30,10 @@
     },
     {
       "proto": "vless",
-      "host": "2.57.242.77",
-      "port": 13868,
+      "host": "31.76.31.133",
+      "port": 443,
       "remark": "🇫🇮 Финляндия | Reality",
-      "raw": "vless://06d44c57-8e1a-41f4-b9c4-65d35869e078@2.57.242.77:13868?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=8SX8GXMe3lXOyY_acO4HFXXYJn_rOOf4zkYFrifV1Tk&sid=e852dc&sni=www.epicgames.com#🇫🇮 Финляндия | Reality",
+      "raw": "vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇫🇮 Финляндия | Reality",
       "category": "normal",
       "is_manual": true,
       "is_bypass": false,
@@ -50,8 +50,8 @@
       "proto": "vless",
       "host": "31.76.251.236",
       "port": 443,
-      "remark": "🇰🇿 Казахстан | Reality",
-      "raw": "vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.251.236:443?encryption=none&security=reality&sni=qwen-01.rita-cloud.com&fp=firefox&pbk=il8g5ZwAs34K1DjDzgAFB3uZfCgLwb2TV1065NaKOCg&sid=2754272e4c90658c&type=tcp&flow=xtls-rprx-vision#🇰🇿 Казахстан | Reality",
+      "remark": "🇵🇱 Польша| Reality",
+      "raw": "vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.251.236:443?encryption=none&security=reality&sni=qwen-01.rita-cloud.com&fp=firefox&pbk=il8g5ZwAs34K1DjDzgAFB3uZfCgLwb2TV1065NaKOCg&sid=2754272e4c90658c&type=tcp&flow=xtls-rprx-vision#🇵🇱 Польша| Reality",
       "category": "normal",
       "is_manual": true,
       "is_bypass": false,
@@ -60,9 +60,9 @@
       "latency_ms": 0,
       "speed_kbps": 0,
       "quality_score": 0.0,
-      "country_code": "KZ",
-      "country_name": "Казахстан",
-      "country_flag": "🇰🇿"
+      "country_code": "PL",
+      "country_name": "Польша",
+      "country_flag": "🇵🇱"
     },
     {
       "proto": "vless",
@@ -81,24 +81,6 @@
       "country_code": "NL",
       "country_name": "Нидерланды",
       "country_flag": "🇳🇱"
-    },
-    {
-      "proto": "vless",
-      "host": "31.76.31.133",
-      "port": 443,
-      "remark": "🇬🇧 Великобритания | Reality",
-      "raw": "vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇬🇧 Великобритания | Reality",
-      "category": "normal",
-      "is_manual": true,
-      "is_bypass": false,
-      "ok": true,
-      "error": null,
-      "latency_ms": 0,
-      "speed_kbps": 0,
-      "quality_score": 0.0,
-      "country_code": "GB",
-      "country_name": "Великобритания",
-      "country_flag": "🇬🇧"
     },
     {
       "proto": "vless",
