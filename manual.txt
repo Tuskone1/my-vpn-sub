@@ -2,11 +2,11 @@
 #profile-update-interval: 1
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
-vless://317595ff-ba63-4ef9-a54c-749ebf46d18b@finland.tunnelfree.org:443?security=reality&type=tcp&headerType=&flow=xtls-rprx-vision&path=&host=&sni=www.ign.com&fp=edge&pbk=4GnPOZT2sf7WGkjOhOuBckj5VkTWkV_PZ6bw_hBC0nI&sid=dd53608f91a83f5a#🇫🇮 Финляндия | Reality
+vless://521fc84d-be38-4973-b89a-df5375062aea@ufivadetb.mvp-rk.site:443?type=tcp&security=tls&encryption=none&sni=ufivadetb.mvp-rk.site&flow=xtls-rprx-vision&alpn=http%2F1.1#🇫🇮 Финляндия | TLS
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.251.236:443?encryption=none&security=reality&sni=qwen-01.rita-cloud.com&fp=firefox&pbk=il8g5ZwAs34K1DjDzgAFB3uZfCgLwb2TV1065NaKOCg&sid=2754272e4c90658c&type=tcp&flow=xtls-rprx-vision#🇰🇿 Казахстан | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.252.118:443?encryption=none&security=reality&sni=ir-012.rita-cloud.com&fp=firefox&pbk=rqxv2mDuaBynNjatS49r8sjoxv3u2EjAWHzKFwF-YTE&sid=6fa5d699cc6a6b66&type=tcp&flow=xtls-rprx-vision#🇳🇱 Нидерланды | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇬🇧 Великобритания | Reality
-vless://3aabd489-04af-42fb-87e2-363d1b83d335@179.61.227.11:2083?encryption=none&type=grpc&serviceName=grpc&mode=gun&security=reality&sni=www.google.com&fp=random&pbk=jowOwf_cxg_FNpG36QJcyqBWtDItBBYjqj7VGhD2lnw&sid=d3124debabf1456c#🇫🇷 Франция
+vless://959e3b98-cff9-46ec-84ea-690ee53692f5@ofrihonna.mvp-rk.site:443?type=tcp&security=tls&encryption=none&sni=ofrihonna.mvp-rk.site&flow=xtls-rprx-vision&alpn=http%2F1.1#🇫🇷 Франция | TLS
 vless://18fd025a-eeb7-4860-b468-299a80b1b2c6@198.105.113.205:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=uFpKFKMzIJcnqfmvL8x7ykGigDW23kPkxpTkvwHJzgo&security=reality&sid=fab4&sni=india-cdn.linus-qanary.lol&type=tcp#🇮🇳 Гузлячий конфиг ⚡❌
 vless://d9e1508d-bf53-47ab-92c2-205706773750@91.185.83.88:443?allowInsecure=1&flow=xtls-rprx-vision&fp=firefox&pbk=vZ22ThhkpXUd5-tY-v5TTrouLHjgYYmeQgqeLt7HRz0&security=reality&sid=&sni=google.com&type=tcp#🇩🇪 Обход #1
 vless://d9e1508d-bf53-47ab-92c2-205706773750@81.163.23.187:7444?allowInsecure=1&flow=xtls-rprx-vision&fp=firefox&pbk=vZ22ThhkpXUd5-tY-v5TTrouLHjgYYmeQgqeLt7HRz0&security=reality&sid=&sni=google.com&type=tcp#🇩🇪 Обход #2
