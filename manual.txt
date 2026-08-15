@@ -1,6 +1,6 @@
 #profile-title: base64:8J+QhyBUdXNrb25lIFZQTg==
 #profile-update-interval: 12
-#announce: Используйте конфиг обхода только при сбоях мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
+#announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@138.124.33.246:443?encryption=none&security=reality&sni=cl-99.rita-cloud.com&fp=firefox&pbk=hCKAQfKTR1Fd-eQLeZaMqHrMwBpxNU4DTSlwxqO2zh4&sid=51606f457c09fca9&type=tcp&flow=xtls-rprx-vision#🇩🇪 Германия | Reality
 vless://6591d5cd-4265-4e29-8802-9b72ed8e8b01@31.76.31.133:443?encryption=none&security=reality&sni=cl-56.rita-cloud.com&fp=firefox&pbk=ScF2OL8vxsEGqR90V0B412gwTM6vVKGgyyKENp5KnDU&sid=236256ea998dfbfd&type=tcp&flow=xtls-rprx-vision#🇫🇮 Финляндия | Reality
