@@ -7,3 +7,6 @@ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLES
 # Au1rxx временно отключён для теста — раскомментируй (убери #) когда убедишься что всё работает:
 https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/v2ray-base64.txt
 https://github.com/Au1rxx/free-vpn-subscriptions/raw/main/output/by-country/v2ray-base64-DE.txt
+https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/filtered/subs/vless.txt
+https://raw.githubusercontent.com/MatinGhanbari/v2ray-configs/main/subscriptions/filtered/subs/hysteria2.txt
+https://sub.vlessfo.ru/vlessforu/working_configs.txt
