@@ -122,8 +122,8 @@
       "proto": "vless",
       "host": "194.55.239.211",
       "port": 9002,
-      "remark": "🇪🇸 Обход №1",
-      "raw": "vless://378d55db-410f-4568-94a7-8fa8d867039f@194.55.239.211:9002?allowInsecure=1&flow=&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sid=6ba85179e30d4fc2&sni=api-maps.yandex.ru&type=grpc#🇪🇸 Обход №1",
+      "remark": "🇪🇸 Обход #1",
+      "raw": "vless://378d55db-410f-4568-94a7-8fa8d867039f@194.55.239.211:9002?allowInsecure=1&flow=&fp=firefox&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sid=6ba85179e30d4fc2&sni=api-maps.yandex.ru&type=grpc#🇪🇸 Обход #1",
       "category": "normal",
       "is_manual": true,
       "is_bypass": false,
@@ -135,6 +135,24 @@
       "country_code": "ES",
       "country_name": "Испания",
       "country_flag": "🇪🇸"
+    },
+    {
+      "proto": "vless",
+      "host": "31.129.42.239",
+      "port": 443,
+      "remark": "🇫🇮 Обход #2",
+      "raw": "vless://2f581cf2-a54e-4e34-bd59-2d6299b7635c@31.129.42.239:443?type=grpc&security=reality&serviceName=grpc8c948083b439&sni=vk.com&pbk=KwPeoAnP208rOsWWHSjhPKdpVzvIHpfBUltBHaBCSDs&sid=d9114354&fp=firefox&encryption=none#🇫🇮 Обход #2",
+      "category": "normal",
+      "is_manual": true,
+      "is_bypass": false,
+      "ok": true,
+      "error": null,
+      "latency_ms": 0,
+      "speed_kbps": 0,
+      "quality_score": 0.0,
+      "country_code": "FI",
+      "country_name": "Финляндия",
+      "country_flag": "🇫🇮"
     }
   ]
 }
