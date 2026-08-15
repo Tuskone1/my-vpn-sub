@@ -101,6 +101,24 @@
       "country_flag": "🇳🇱"
     },
     {
+      "proto": "hysteria2",
+      "host": "forever.h4ck.me",
+      "port": 443,
+      "remark": "🇳🇱 Нидерланды | Hysteria 0/250 GB",
+      "raw": "hysteria2://3ebb1100-d433-4404-9803-d731d7d88b13@forever.h4ck.me:443/?sni=forever.h4ck.me&fm=%7B%22quicParams%22%3A%7B%22brutalUp%22%3A%22300+mbps%22%2C%22brutalDown%22%3A%22300+mbps%22%2C%22congestion%22%3A%22force-brutal%22%2C%22maxIdleTimeout%22%3A10%2C%22keepAlivePeriod%22%3A5%2C%22maxStreamReceiveWindow%22%3A15728640%2C%22initStreamReceiveWindow%22%3A5242880%2C%22maxConnectionReceiveWindow%22%3A15728640%2C%22initConnectionReceiveWindow%22%3A5242880%7D%7D#🇳🇱 Нидерланды | Hysteria 0/250 GB",
+      "category": "normal",
+      "is_manual": true,
+      "is_bypass": false,
+      "ok": true,
+      "error": null,
+      "latency_ms": 0,
+      "speed_kbps": 0,
+      "quality_score": 0.0,
+      "country_code": "NL",
+      "country_name": "Нидерланды",
+      "country_flag": "🇳🇱"
+    },
+    {
       "proto": "vless",
       "host": "62.133.62.70",
       "port": 13868,
