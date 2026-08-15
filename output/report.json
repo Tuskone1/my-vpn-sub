@@ -171,6 +171,42 @@
       "country_code": "FI",
       "country_name": "Финляндия",
       "country_flag": "🇫🇮"
+    },
+    {
+      "proto": "vless",
+      "host": "elder.mistvalley.top",
+      "port": 443,
+      "remark": "🇩🇪 Обход #3",
+      "raw": "vless://2d046b6b-e12e-4065-a83c-335bfbb73fc9@elder.mistvalley.top:443?encryption=none&security=reality&sni=elder.mistvalley.top&fp=firefox&pbk=EUK_ePvEKUGcezQYHqgJ5P462XxLPXPm9CZWGLaL33k&sid=264d6826bc835422&type=grpc&mode=gun&authority=&serviceName=grpc#🇩🇪 Обход #3",
+      "category": "normal",
+      "is_manual": true,
+      "is_bypass": false,
+      "ok": true,
+      "error": null,
+      "latency_ms": 0,
+      "speed_kbps": 0,
+      "quality_score": 0.0,
+      "country_code": "DE",
+      "country_name": "Германия",
+      "country_flag": "🇩🇪"
+    },
+    {
+      "proto": "vless",
+      "host": "194.55.239.164",
+      "port": 443,
+      "remark": "🇩🇪 Обход #4",
+      "raw": "vless://fd12bf77-bca4-4ccc-8bd0-76a2cfc5985a@194.55.239.164:443?flow=xtls-rprx-vision&encryption=none&security=reality&sni=ads.vk.ru&fp=firefox&pbk=sdnD0vxmj8kHBOoVM8TE9IyBCGwnKNB8hZVaHp_Zfjk&sid=c427&type=tcp&headerType=none#🇩🇪 Обход #4",
+      "category": "normal",
+      "is_manual": true,
+      "is_bypass": false,
+      "ok": true,
+      "error": null,
+      "latency_ms": 0,
+      "speed_kbps": 0,
+      "quality_score": 0.0,
+      "country_code": "DE",
+      "country_name": "Германия",
+      "country_flag": "🇩🇪"
     }
   ]
 }
