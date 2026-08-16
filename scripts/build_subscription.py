@@ -1946,6 +1946,7 @@ def main():
     final_ok = []
     round1 = []
     round2 = []
+    round3 = []
 
     # ==============================================================
     # ПОЛНОСТЬЮ ОТКЛЮЧИТЬ ТЕСТЫ
@@ -2143,17 +2144,13 @@ def main():
                 True
             )
 
-            # ======================================================
-            # FINAL FILTER
-            # ======================================================
-
-            for result in round2:
+            def passes_thresholds(result):
 
                 if not result.get(
                     "ok",
                     False
                 ):
-                    continue
+                    return False
 
                 latency = result.get(
                     "latency_ms"
@@ -2167,7 +2164,7 @@ def main():
                     latency is None
                     or speed is None
                 ):
-                    continue
+                    return False
 
                 is_bypass = result.get(
                     "is_bypass",
@@ -2175,35 +2172,120 @@ def main():
                 )
 
                 if is_bypass:
-
-                    max_latency = (
-                        args.bypass_max_latency_ms
-                    )
-
-                    min_speed = (
-                        args.bypass_min_speed_kbps
-                    )
-
+                    max_latency = args.bypass_max_latency_ms
+                    min_speed = args.bypass_min_speed_kbps
                 else:
+                    max_latency = args.max_latency_ms
+                    min_speed = args.min_speed_kbps
 
-                    max_latency = (
-                        args.max_latency_ms
-                    )
+                return (
+                    latency <= max_latency
+                    and speed >= min_speed
+                )
 
-                    min_speed = (
-                        args.min_speed_kbps
-                    )
+            round2_by_key = {
+                (r["proto"], r["host"], r["port"]): r
+                for r in round2
+            }
 
-                if latency > max_latency:
+            round2_ok_keys = {
+                key
+                for key, r in round2_by_key.items()
+                if passes_thresholds(r)
+            }
+
+            print(
+                f"[i] Раунд 2: прошли "
+                f"{len(round2_ok_keys)}/{len(survivors)}"
+            )
+
+            round2_survivors = [
+                (meta, outbound)
+                for meta, outbound in survivors
+                if (meta["proto"], meta["host"], meta["port"]) in round2_ok_keys
+            ]
+
+            # ======================================================
+            # ПАУЗА ПЕРЕД РАУНДОМ 3 — та же логика, что и перед
+            # раундом 2: конфиг должен продержаться ещё какое-то
+            # время, а не просто ответить один раз и отвалиться.
+            # ======================================================
+
+            if (
+                round2_survivors
+                and args.round_gap > 0
+            ):
+                print(
+                    f"[i] Жду ещё "
+                    f"{args.round_gap:.0f} сек перед раундом 3..."
+                )
+
+                time.sleep(
+                    args.round_gap
+                )
+
+            # ======================================================
+            # ROUND 3 — независимое повторное подтверждение
+            # ======================================================
+
+            print(
+                f"[i] Раунд 3 (подтверждение стабильности): "
+                f"{len(round2_survivors)} конфигов..."
+            )
+
+            round3 = run_round(
+                args.xray_bin,
+                round2_survivors,
+                args.workers,
+                args.timeout,
+                args.speed_timeout,
+                True
+            )
+
+            round3_by_key = {
+                (r["proto"], r["host"], r["port"]): r
+                for r in round3
+            }
+
+            round3_ok = 0
+
+            # ======================================================
+            # FINAL FILTER — должен пройти И раунд 2, И раунд 3.
+            # Итоговые цифры — худшие (консервативные) из двух
+            # раундов, чтобы не засчитывать случайный всплеск.
+            # ======================================================
+
+            for key in round2_ok_keys:
+
+                r3 = round3_by_key.get(key)
+
+                if not r3 or not passes_thresholds(r3):
                     continue
 
-                if speed < min_speed:
-                    continue
+                round3_ok += 1
+
+                r2 = round2_by_key[key]
+
+                combined_latency = max(
+                    r2["latency_ms"],
+                    r3["latency_ms"]
+                )
+
+                combined_speed = min(
+                    r2["speed_kbps"],
+                    r3["speed_kbps"]
+                )
+
+                result = {
+                    **r3,
+                    "latency_ms": combined_latency,
+                    "speed_kbps": combined_speed,
+                }
 
                 result["quality_score"] = (
                     calculate_score(
-                        speed,
-                        latency
+                        combined_speed,
+                        combined_latency
                     )
                 )
 
@@ -2211,11 +2293,17 @@ def main():
                     result
                 )
 
+            print(
+                f"[i] Раунд 3: подтвердили "
+                f"{round3_ok}/{len(round2_survivors)}"
+            )
+
         else:
 
             # Переменные нужны report.json
             round1 = []
             round2 = []
+            round3 = []
     # ------------------------------------------------------------------
     # COUNTRY DETECTION
     # ------------------------------------------------------------------
@@ -2277,6 +2365,8 @@ def main():
         "round1": round1,
 
         "round2": round2,
+
+        "round3": round3,
 
         "final": final_ok,
     }
