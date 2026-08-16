@@ -40,11 +40,12 @@ jobs:
       - name: Test configs & build subscriptions
         run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 15 --bypass-output 5 --max-latency-ms 400 --min-speed-kbps 350 --bypass-max-latency-ms 600 --bypass-min-speed-kbps 150 --round-gap 30 --max-per-country 2
 
-
-      - name: Commit updated subscriptionЫ
+      - name: Commit updated subscription
         run: |
           git config user.name "sub-bot"
           git config user.email "sub-bot@users.noreply.github.com"
           git add output/
           git diff --cached --quiet || git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
+          git pull --rebase --autostash origin main
           git push
+          
