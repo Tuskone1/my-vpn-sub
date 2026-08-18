@@ -1541,18 +1541,22 @@ def load_category(
     )
 
     raw_uris = []
+    uri_source = {}
 
     # Сначала реальные источники
     for source in sources:
-        raw_uris.extend(
-            fetch_source(source)
-        )
+        fetched = fetch_source(source)
+        for uri in fetched:
+            raw_uris.append(uri)
+            if uri not in uri_source:
+                uri_source[uri] = source
 
     # Manual НЕ получает привилегий.
     # Он просто добавляет конфиги в общий пул.
-    raw_uris.extend(
-        manual_uris
-    )
+    for uri in manual_uris:
+        raw_uris.append(uri)
+        if uri not in uri_source:
+            uri_source[uri] = "manual"
 
     print(
         f"[i] [{category}] "
@@ -1609,7 +1613,13 @@ def load_category(
         )
 
         meta["category"] = category
-        
+
+        src = uri_source.get(uri, "unknown")
+        try:
+            meta["source"] = urllib.parse.urlparse(src).netloc or src
+        except Exception:
+            meta["source"] = src
+
         meta["is_manual"] = uri in manual_uris
         
         meta["is_bypass"] = (
@@ -2507,10 +2517,35 @@ def main():
         # BASE64
         # --------------------------------------------------------------
 
-        # Заголовки подписки (метаданные для клиентов)
+        def _b64(text):
+            return base64.b64encode(
+                text.encode("utf-8")
+            ).decode("utf-8")
+
+        if category == "white":
+
+            profile_title = "🐇 Tuskone | БС"
+
+            announce_text = (
+                "Эти конфиги — для обхода блокировок мобильного "
+                "интернета (белые списки). Используйте их только "
+                "при таких блокировках."
+            )
+
+        else:
+
+            profile_title = "🐇 Tuskone VPN"
+
+            announce_text = (
+                "Обычные конфиги для повседневного использования. "
+                "Пожалуйста, не скачивайте торренты через VPN."
+            )
+
+        # Заголовки подписки (метаданные для клиентов, формат INCY/Happ)
         headers = [
-            "#profile-title: base64:VHVza29uZSBWUE4=",
-            "#profile-update-interval: 1",
+            f"#profile-title: base64:{_b64(profile_title)}",
+            "#profile-update-interval: 6",
+            f"#announce: base64:{_b64(announce_text)}",
         ]
 
         # Объединяем заголовки и конфиги
@@ -2612,6 +2647,33 @@ def main():
                 f"[i] [{category}] "
                 f"Обходов в подписке: "
                 f"{bypass_selected}"
+            )
+
+        source_counts = {}
+
+        for result in selected:
+
+            src = result.get(
+                "source",
+                "unknown"
+            )
+
+            source_counts[src] = (
+                source_counts.get(src, 0)
+                + 1
+            )
+
+        print(
+            f"[i] [{category}] "
+            f"Источники (сколько рабочих дал каждый):"
+        )
+
+        for src, count in sorted(
+            source_counts.items(),
+            key=lambda x: (-x[1], x[0])
+        ):
+            print(
+                f"    {src}: {count}"
             )
 
         print(
