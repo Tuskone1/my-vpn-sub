@@ -3,7 +3,20 @@ name: Update VPN Subscription
 on:
   schedule:
     - cron: '0 */6 * * *'
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      add_source:
+        description: 'Ссылка добавить в sources.txt (обычная подписка)'
+        required: false
+        default: ''
+      add_source_white:
+        description: 'Ссылка добавить в sources_whitelist.txt (белые списки)'
+        required: false
+        default: ''
+      remove_source:
+        description: 'Кусок ссылки — удалить из обоих файлов источников'
+        required: false
+        default: ''
   push:
     branches: [main]
     paths:
@@ -31,6 +44,34 @@ jobs:
       - name: Install python deps
         run: pip install -r requirements.txt
 
+      - name: Apply source add/remove (если заполнено при ручном запуске)
+        if: ${{ github.event.inputs.add_source != '' || github.event.inputs.add_source_white != '' || github.event.inputs.remove_source != '' }}
+        run: |
+          CHANGED=0
+
+          if [ -n "${{ github.event.inputs.add_source }}" ]; then
+            echo "${{ github.event.inputs.add_source }}" >> sources.txt
+            CHANGED=1
+          fi
+
+          if [ -n "${{ github.event.inputs.add_source_white }}" ]; then
+            echo "${{ github.event.inputs.add_source_white }}" >> sources_whitelist.txt
+            CHANGED=1
+          fi
+
+          if [ -n "${{ github.event.inputs.remove_source }}" ]; then
+            sed -i "\|${{ github.event.inputs.remove_source }}|d" sources.txt sources_whitelist.txt
+            CHANGED=1
+          fi
+
+          if [ "$CHANGED" = "1" ]; then
+            git config user.name "sub-bot"
+            git config user.email "sub-bot@users.noreply.github.com"
+            git add sources.txt sources_whitelist.txt
+            git diff --cached --quiet || git commit -m "manual source update via Actions input"
+            git push
+          fi
+
       - name: Download Xray-core
         run: |
           curl -L -o xray.zip https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
@@ -38,7 +79,7 @@ jobs:
           chmod +x xray_bin/xray
 
       - name: Test configs & build subscriptions
-        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 15 --bypass-output 5 --max-latency-ms 400 --min-speed-kbps 350 --bypass-max-latency-ms 600 --bypass-min-speed-kbps 150 --round-gap 30 --max-per-country 2
+        run: python -u scripts/build_subscription.py --xray-bin ./xray_bin/xray --workers 20 --max-output 15 --bypass-output 5 --max-latency-ms 400 --min-speed-kbps 350 --bypass-max-latency-ms 600 --bypass-min-speed-kbps 150 --round-gap 30 --max-per-country 2 --repo-raw-base "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}"
 
       - name: Commit updated subscription
         run: |
@@ -46,6 +87,4 @@ jobs:
           git config user.email "sub-bot@users.noreply.github.com"
           git add output/
           git diff --cached --quiet || git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
-          git pull --rebase --autostash origin main
           git push
-          
