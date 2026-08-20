@@ -1,1 +1,2 @@
 requests[socks]==2.32.3
+qrcode[pil]==8.0
