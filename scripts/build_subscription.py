@@ -2,6 +2,7 @@
 
 import argparse
 import base64
+import datetime
 import html
 import json
 import os
@@ -1756,6 +1757,219 @@ def cap_per_country(
 
 
 # ==========================================================================
+# ИСТОРИЯ НАДЁЖНОСТИ (между запусками)
+# ==========================================================================
+
+HISTORY_MIN_SAMPLES = 3
+HISTORY_MIN_PASS_RATE = 0.5
+HISTORY_MAX_AGE_DAYS = 30
+
+
+def _history_key(proto, host, port):
+    return f"{proto}|{host}|{port}"
+
+
+def load_history(path):
+    if not os.path.exists(path):
+        return {}
+
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_history(path, history):
+
+    now = datetime.datetime.now(
+        datetime.timezone.utc
+    )
+
+    cutoff = now - datetime.timedelta(
+        days=HISTORY_MAX_AGE_DAYS
+    )
+
+    pruned = {}
+
+    for key, entry in history.items():
+        try:
+            last_run = datetime.datetime.fromisoformat(
+                entry.get("last_run", "")
+            )
+        except Exception:
+            continue
+
+        if last_run >= cutoff:
+            pruned[key] = entry
+
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(
+            pruned,
+            f,
+            ensure_ascii=False,
+            indent=2
+        )
+
+
+def apply_history(final_ok, history):
+    """Убирает конфиги, которые исторически часто отваливались, даже если
+    сейчас случайно прошли 3 раунда. Остальным поднимает/опускает
+    quality_score по историческому проценту успеха."""
+
+    result = []
+
+    for item in final_ok:
+
+        key = _history_key(
+            item["proto"],
+            item["host"],
+            item["port"]
+        )
+
+        hist = history.get(
+            key,
+            {"seen": 0, "passed": 0}
+        )
+
+        seen = hist.get("seen", 0)
+        passed = hist.get("passed", 0)
+
+        if seen >= HISTORY_MIN_SAMPLES:
+
+            rate = passed / seen
+
+            if rate < HISTORY_MIN_PASS_RATE:
+                # исторически ненадёжный — не пускаем, даже если сейчас повезло
+                continue
+
+            item["quality_score"] = round(
+                item["quality_score"]
+                * (0.7 + 0.3 * rate),
+                2
+            )
+
+            item["history_pass_rate"] = round(rate, 2)
+
+        result.append(item)
+
+    return result
+
+
+def update_history(history, tested_keys, passed_keys):
+
+    now_iso = datetime.datetime.now(
+        datetime.timezone.utc
+    ).isoformat()
+
+    for key in tested_keys:
+
+        hkey = _history_key(*key)
+
+        entry = history.get(
+            hkey,
+            {"seen": 0, "passed": 0}
+        )
+
+        entry["seen"] = entry.get("seen", 0) + 1
+
+        if key in passed_keys:
+            entry["passed"] = entry.get("passed", 0) + 1
+
+        entry["last_run"] = now_iso
+
+        history[hkey] = entry
+
+    return history
+
+
+# ==========================================================================
+# СРОК ДЕЙСТВИЯ ПОДПИСКИ
+# ==========================================================================
+# Формат expiry.txt (по одной строке на категорию):
+#   normal: 2026-12-31
+#   white: never
+# "never" или отсутствие строки = без ограничения срока.
+#
+# ВАЖНО (честно): это не настоящая серверная авторизация — сами VPN-сервера
+# в источниках ничего не знают про эту дату и продолжат принимать любого,
+# кто как-то узнает их адрес напрямую. Что эта система РЕАЛЬНО даёт:
+# как только дата истекла, наш скрипт перестаёт публиковать рабочие
+# конфиги в файле подписки — при следующем обновлении подписки в клиенте
+# (по расписанию раз в N часов, или вручную) список станет пустым.
+# Мгновенного отключения "здесь и сейчас" у уже подключённого человека
+# это не даёт — только у бесплатных платных VPN с полноценным сервером
+# авторизации это возможно, а не у статического файла на GitHub.
+
+def load_expiry(path):
+
+    result = {
+        "normal": None,
+        "white": None,
+    }
+
+    if not os.path.exists(path):
+        return result
+
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+
+            if not line or line.startswith("#"):
+                continue
+
+            if ":" not in line:
+                continue
+
+            key, value = line.split(":", 1)
+            key = key.strip().lower()
+            value = value.strip().lower()
+
+            if key not in result:
+                continue
+
+            if value in ("", "never", "нет", "никогда"):
+                result[key] = None
+                continue
+
+            try:
+                result[key] = datetime.datetime.strptime(
+                    value,
+                    "%Y-%m-%d"
+                ).replace(
+                    tzinfo=datetime.timezone.utc
+                )
+            except ValueError:
+                print(
+                    f"[!] expiry.txt: не понял дату "
+                    f"'{value}' для '{key}', "
+                    f"формат ГГГГ-ММ-ДД или never"
+                )
+                result[key] = None
+
+    return result
+
+
+def expiry_status(category, expiry_map):
+    """Возвращает (is_expired, unix_timestamp_или_0, дней_осталось_или_None)."""
+
+    expires_at = expiry_map.get(category)
+
+    if expires_at is None:
+        return False, 0, None
+
+    now = datetime.datetime.now(
+        datetime.timezone.utc
+    )
+
+    is_expired = now >= expires_at
+
+    days_left = (expires_at - now).days
+
+    return is_expired, int(expires_at.timestamp()), days_left
+
+
+# ==========================================================================
 # MAIN
 # ==========================================================================
 
@@ -1882,7 +2096,27 @@ def main():
         help="Максимум конфигов от одной страны в каждой подписке"
     )
 
+    parser.add_argument(
+        "--repo-raw-base",
+        type=str,
+        default="",
+        help="Базовый raw.githubusercontent.com URL репозитория "
+             "(для генерации QR-кода на подписку), например: "
+             "https://raw.githubusercontent.com/ник/репо/main"
+    )
+
+    parser.add_argument(
+        "--expiry-file",
+        type=str,
+        default="expiry.txt",
+        help="Файл со сроком действия подписок по категориям"
+    )
+
     args = parser.parse_args()
+
+    expiry_map = load_expiry(
+        args.expiry_file
+    )
 
     os.makedirs(
         args.outdir,
@@ -2314,6 +2548,48 @@ def main():
             round1 = []
             round2 = []
             round3 = []
+
+    # ------------------------------------------------------------------
+    # ИСТОРИЯ НАДЁЖНОСТИ
+    # ------------------------------------------------------------------
+    # Работает только когда реально было тестирование (round2/round3
+    # непусты) — в --skip-test историю не трогаем, там сигнала нет.
+
+    history_path = os.path.join(
+        args.outdir,
+        "history.json"
+    )
+
+    history = load_history(history_path)
+
+    tested_keys = {
+        (r["proto"], r["host"], r["port"])
+        for r in (round2 + round3)
+    }
+
+    passed_keys = {
+        (r["proto"], r["host"], r["port"])
+        for r in final_ok
+    }
+
+    if tested_keys:
+
+        final_ok = apply_history(
+            final_ok,
+            history
+        )
+
+        history = update_history(
+            history,
+            tested_keys,
+            passed_keys
+        )
+
+        save_history(
+            history_path,
+            history
+        )
+
     # ------------------------------------------------------------------
     # COUNTRY DETECTION
     # ------------------------------------------------------------------
@@ -2399,6 +2675,8 @@ def main():
     # ------------------------------------------------------------------
     # BUILD SUBSCRIPTIONS
     # ------------------------------------------------------------------
+
+    status_summary = {}
 
     for category in (
         "normal",
@@ -2495,6 +2773,21 @@ def main():
             )
 
         # --------------------------------------------------------------
+        # СРОК ДЕЙСТВИЯ
+        # --------------------------------------------------------------
+
+        is_expired, expire_ts, days_left = expiry_status(
+            category,
+            expiry_map
+        )
+
+        if is_expired:
+            # Истёкшая подписка публикуется НАМЕРЕННО пустой — это не
+            # авария теста, поэтому ниже разрешаем перезаписать файл
+            # даже при пустом final_lines.
+            selected = []
+
+        # --------------------------------------------------------------
         # НАЗВАНИЯ
         # --------------------------------------------------------------
 
@@ -2541,11 +2834,29 @@ def main():
                 "Пожалуйста, не скачивайте торренты через VPN."
             )
 
+        if is_expired:
+
+            profile_title = profile_title + " (истекла)"
+
+            announce_text = (
+                "Срок действия этой подписки истёк. "
+                "Обратитесь к администратору для продления."
+            )
+
+        elif days_left is not None and days_left <= 3:
+
+            announce_text = (
+                announce_text
+                + f" ⚠️ Осталось дней: {days_left}."
+            )
+
         # Заголовки подписки (метаданные для клиентов, формат INCY/Happ)
         headers = [
             f"#profile-title: base64:{_b64(profile_title)}",
             "#profile-update-interval: 6",
             f"#announce: base64:{_b64(announce_text)}",
+            f"#subscription-userinfo: upload=0; download=0; "
+            f"total=0; expire={expire_ts}",
         ]
 
         # Объединяем заголовки и конфиги
@@ -2568,14 +2879,70 @@ def main():
             f"subscription{suffix}.txt"
         )
 
-        with open(
-            sub_path,
-            "w",
-            encoding="utf-8"
-        ) as f:
-            f.write(
-                sub_b64
+        qr_path = os.path.join(
+            args.outdir,
+            f"qr{suffix}.png"
+        )
+
+        if not final_lines and not is_expired:
+
+            # Ничего рабочего в этом прогоне — НЕ затираем прошлый
+            # рабочий файл (он уже лежит в output/ после checkout).
+            # Просто громко предупреждаем в логе.
+            print(
+                f"[!!!] [{category}] ВНИМАНИЕ: 0 рабочих конфигов "
+                f"в этом прогоне — файл {sub_path} оставлен БЕЗ "
+                f"ИЗМЕНЕНИЙ (сохранена предыдущая рабочая версия)."
             )
+
+        elif is_expired:
+
+            # Осознанное опустошение по сроку действия — это НЕ авария,
+            # публикуем поверх прошлой версии.
+            print(
+                f"[i] [{category}] Срок действия истёк — "
+                f"публикую подписку без конфигов."
+            )
+
+            with open(
+                sub_path,
+                "w",
+                encoding="utf-8"
+            ) as f:
+                f.write(
+                    sub_b64
+                )
+
+        else:
+
+            with open(
+                sub_path,
+                "w",
+                encoding="utf-8"
+            ) as f:
+                f.write(
+                    sub_b64
+                )
+
+            try:
+                import qrcode
+
+                sub_url = (
+                    f"{args.repo_raw_base}/output/"
+                    f"subscription{suffix}.txt"
+                    if args.repo_raw_base
+                    else None
+                )
+
+                if sub_url:
+                    img = qrcode.make(sub_url)
+                    img.save(qr_path)
+
+            except Exception as e:
+                print(
+                    f"[!] [{category}] "
+                    f"QR-код не сгенерирован: {e}"
+                )
 
         # --------------------------------------------------------------
         # СТАТИСТИКА ПО СТРАНАМ
@@ -2680,6 +3047,79 @@ def main():
             "=================================================="
         )
         print("")
+
+        status_summary[category] = {
+            "count": len(final_lines),
+            "empty_this_run": not final_lines,
+            "countries": countries,
+            "sources": source_counts,
+        }
+
+    # ------------------------------------------------------------------
+    # STATUS.md — сводка на самом видном месте, без лазания по логам
+    # ------------------------------------------------------------------
+
+    now_str = datetime.datetime.now(
+        datetime.timezone.utc
+    ).strftime("%Y-%m-%d %H:%M UTC")
+
+    lines = [
+        "# Статус подписок",
+        "",
+        f"Последний запуск: {now_str}",
+        "",
+    ]
+
+    labels = {
+        "normal": "🐇 Обычная подписка",
+        "white": "🐇 Белые списки (БС)",
+    }
+
+    for category in ("normal", "white"):
+
+        info = status_summary.get(
+            category,
+            {"count": 0, "empty_this_run": True,
+             "countries": {}, "sources": {}}
+        )
+
+        lines.append(f"## {labels[category]}")
+        lines.append("")
+
+        if info["empty_this_run"]:
+            lines.append(
+                "⚠️ **В этом прогоне рабочих конфигов не найдено — "
+                "показана предыдущая опубликованная версия.**"
+            )
+        else:
+            lines.append(
+                f"✅ Рабочих конфигов: **{info['count']}**"
+            )
+
+        lines.append("")
+
+        if info["countries"]:
+            lines.append("Страны:")
+            for country, count in sorted(
+                info["countries"].items(),
+                key=lambda x: (-x[1], x[0])
+            ):
+                lines.append(f"- {country}: {count}")
+            lines.append("")
+
+    status_path = os.path.join(
+        args.outdir,
+        "STATUS.md"
+    )
+
+    with open(
+        status_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+        f.write(
+            "\n".join(lines)
+        )
 
 
 if __name__ == "__main__":
