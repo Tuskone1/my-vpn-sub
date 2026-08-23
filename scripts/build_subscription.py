@@ -2167,6 +2167,7 @@ def load_expiry(path):
     result = {
         "normal": None,
         "white": None,
+        "manual": None,
     }
 
     if not os.path.exists(path):
@@ -3331,46 +3332,72 @@ def main():
     manual_seen = set()
     manual_lines = []
 
-    for uri in manual_raw:
-
-        result = parse_uri(uri)
-
-        if not result:
-            continue
-
-        meta, _ = result
-
-        if any(b in meta["host"] for b in blacklist):
-            continue
-
-        key = (meta["proto"], meta["host"], meta["port"])
-
-        if key in manual_seen:
-            continue
-
-        manual_seen.add(key)
-        manual_lines.append(uri)
-
-    manual_b64 = base64.b64encode(
-        "\n".join(manual_lines).encode("utf-8")
-    ).decode("utf-8")
-
-    manual_path = os.path.join(
-        args.outdir,
-        "subscription_manual.txt"
+    manual_is_expired, _, _ = expiry_status(
+        "manual",
+        expiry_map
     )
 
-    with open(
-        manual_path,
-        "w",
-        encoding="utf-8"
-    ) as f:
-        f.write(manual_b64)
+    if manual_is_expired:
 
-    print(
-        f"[i] [manual] отдельный файл для Cloudflare Worker: "
-        f"{len(manual_lines)} конфигов -> {manual_path}"
-    )
+        print(
+            "[i] [manual] Срок действия истёк "
+            "(expiry.txt: manual) — публикую пустой файл. "
+            "Это общий рубильник для ВСЕХ персональных ссылок "
+            "через Cloudflare Worker разом."
+        )
+
+    else:
+
+        for uri in manual_raw:
+
+            result = parse_uri(uri)
+
+            if not result:
+                continue
+
+            meta, _ = result
+
+            if any(b in meta["host"] for b in blacklist):
+                continue
+
+            key = (meta["proto"], meta["host"], meta["port"])
+
+            if key in manual_seen:
+                continue
+
+            manual_seen.add(key)
+            manual_lines.append(uri)
+
+    if manual_lines or manual_is_expired:
+
+        manual_b64 = base64.b64encode(
+            "\n".join(manual_lines).encode("utf-8")
+        ).decode("utf-8")
+
+        manual_path = os.path.join(
+            args.outdir,
+            "subscription_manual.txt"
+        )
+
+        with open(
+            manual_path,
+            "w",
+            encoding="utf-8"
+        ) as f:
+            f.write(manual_b64)
+
+        print(
+            f"[i] [manual] отдельный файл для Cloudflare Worker: "
+            f"{len(manual_lines)} конфигов -> {manual_path}"
+        )
+
+    else:
+
+        print(
+            "[!!!] [manual] ВНИМАНИЕ: 0 конфигов в manual.txt/"
+            "manual_whitelist.txt — файл subscription_manual.txt "
+            "оставлен БЕЗ ИЗМЕНЕНИЙ."
+        )
 
     # ------------------------------------------------------------------
     # STATUS.md — сводка на самом видном месте, без лазания по логам
