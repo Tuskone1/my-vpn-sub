@@ -532,10 +532,14 @@ def parse_vless_trojan(uri, proto):
                 "/"
             ),
             "headers": {
+                # По умолчанию — SNI, а не IP/адрес подключения: при
+                # доменной маскировке (CDN-фронтинг) Host обязан совпадать
+                # с доменом, иначе сервер не поймёт, куда роутить запрос.
                 "Host": q.get(
-                    "host",
-                    host
-                )
+                    "host"
+                ) or q.get(
+                    "sni"
+                ) or host
             },
         }
 
@@ -652,9 +656,10 @@ def parse_vmess(uri):
                 "/"
             ),
             "headers": {
-                "Host": data.get(
-                    "host",
-                    host
+                "Host": (
+                    data.get("host")
+                    or data.get("sni")
+                    or host
                 )
             }
         }
@@ -892,6 +897,262 @@ def parse_hysteria2(uri):
     }
 
     return meta, outbound
+
+
+# --------------------------------------------------------------------------
+# ОБРАТНОЕ ПРЕОБРАЗОВАНИЕ: полный Xray/V2Ray JSON-конфиг клиента -> URI
+# --------------------------------------------------------------------------
+# Позволяет вставлять в manual.txt / manual_whitelist.txt не только готовые
+# vless://... ссылки, но и целый JSON-конфиг (например, экспортированный
+# из клиента с настройками роутинга) — достаём оттуда только сервер.
+# ВАЖНО: правила маршрутизации (routing/dns из такого JSON) НЕ переносятся —
+# формат подписки физически не умеет их передавать, это настройка каждого
+# приложения отдельно, а не подписки.
+
+def _vless_outbound_to_uri(outbound, remarks):
+    try:
+        settings = outbound.get("settings", {})
+        vnext = (settings.get("vnext") or [{}])[0]
+        address = vnext.get("address")
+        port = vnext.get("port")
+        user = (vnext.get("users") or [{}])[0]
+        uid = user.get("id")
+
+        if not (address and port and uid):
+            return None
+
+        stream = outbound.get("streamSettings", {})
+        network = stream.get("network", "tcp")
+        security = stream.get("security", "none")
+
+        params = {
+            "encryption": user.get("encryption", "none"),
+            "type": network,
+            "security": security,
+        }
+
+        if user.get("flow"):
+            params["flow"] = user["flow"]
+
+        if security == "reality":
+            rs = stream.get("realitySettings", {})
+            params["sni"] = rs.get("serverName", "")
+            params["pbk"] = rs.get("publicKey", "")
+            params["sid"] = rs.get("shortId", "")
+            if rs.get("fingerprint"):
+                params["fp"] = rs["fingerprint"]
+            if rs.get("spiderX"):
+                params["spx"] = rs["spiderX"]
+
+        elif security == "tls":
+            ts = stream.get("tlsSettings", {})
+            if ts.get("serverName"):
+                params["sni"] = ts["serverName"]
+            if ts.get("fingerprint"):
+                params["fp"] = ts["fingerprint"]
+            if ts.get("alpn"):
+                params["alpn"] = ",".join(ts["alpn"])
+
+        if network == "ws":
+            ws = stream.get("wsSettings", {})
+            if ws.get("path"):
+                params["path"] = ws["path"]
+            ws_host = (ws.get("headers") or {}).get("Host")
+            if ws_host:
+                params["host"] = ws_host
+
+        elif network == "grpc":
+            gs = stream.get("grpcSettings", {})
+            if gs.get("serviceName"):
+                params["serviceName"] = gs["serviceName"]
+
+        query = urllib.parse.urlencode({
+            k: v for k, v in params.items() if v not in (None, "")
+        })
+
+        frag = urllib.parse.quote(remarks)
+
+        return f"vless://{uid}@{address}:{port}?{query}#{frag}"
+
+    except Exception:
+        return None
+
+
+def _hysteria_outbound_to_uri(outbound, remarks):
+    try:
+        settings = outbound.get("settings", {})
+        address = settings.get("address")
+        port = settings.get("port")
+
+        stream = outbound.get("streamSettings", {})
+        hs = stream.get("hysteriaSettings", {})
+        auth = hs.get("auth", "")
+
+        ts = stream.get("tlsSettings", {})
+        sni = ts.get("serverName", "")
+        insecure = "1" if ts.get("allowInsecure") else "0"
+        alpn = ",".join(ts.get("alpn") or ["h3"])
+
+        if not (address and port and auth):
+            return None
+
+        query = urllib.parse.urlencode({
+            "insecure": insecure,
+            "sni": sni,
+            "alpn": alpn,
+        })
+
+        frag = urllib.parse.quote(remarks)
+
+        return f"hysteria2://{auth}@{address}:{port}/?{query}#{frag}"
+
+    except Exception:
+        return None
+
+
+_VALID_JSON_ESCAPES = set('"\\/bfnrtu')
+
+
+def _repair_json_escapes(text):
+    """Некоторые экспортированные конфиги содержат невалидные с точки
+    зрения строгого JSON escape-последовательности — например regexp-
+    паттерны вида "regexp:.*\\.ru$" вместо правильного "...\\\\.ru$".
+    Чиним по минимуму: одиночный backslash не перед допустимым
+    escape-символом удваиваем, не трогая остальной текст."""
+
+    result = []
+    i = 0
+    n = len(text)
+
+    while i < n:
+
+        ch = text[i]
+
+        if ch == "\\" and i + 1 < n:
+
+            nxt = text[i + 1]
+
+            if nxt in _VALID_JSON_ESCAPES:
+                result.append(ch)
+                result.append(nxt)
+                i += 2
+                continue
+
+            result.append("\\\\")
+            i += 1
+            continue
+
+        result.append(ch)
+        i += 1
+
+    return "".join(result)
+
+
+def extract_uri_from_xray_json(chunk):
+    """Принимает текст целого Xray/V2Ray клиентского JSON-конфига (или
+    просто один outbound-объект) и достаёт из него vless:// / hysteria2://
+    ссылку на сервер. Правила маршрутизации из такого JSON намеренно
+    игнорируются — подписка физически не может их нести."""
+
+    data = None
+
+    try:
+        data = json.loads(chunk)
+    except Exception:
+        try:
+            data = json.loads(_repair_json_escapes(chunk))
+        except Exception:
+            return None
+
+    remarks = (
+        data.get("remarks")
+        or data.get("ps")
+        or data.get("name")
+        or "Imported"
+    )
+
+    outbounds = data.get("outbounds")
+
+    if not outbounds and data.get("protocol"):
+        # сам объект - это один outbound, а не обёртка целого клиента
+        outbounds = [data]
+
+    if not outbounds:
+        return None
+
+    for ob in outbounds:
+
+        proto = ob.get("protocol")
+
+        if proto == "vless":
+            uri = _vless_outbound_to_uri(ob, remarks)
+            if uri:
+                return uri
+
+        if proto == "hysteria":
+            uri = _hysteria_outbound_to_uri(ob, remarks)
+            if uri:
+                return uri
+
+    return None
+
+
+URI_LINE_PREFIXES = (
+    "vless://", "hysteria2://", "hy2://",
+    "@", "t.me/", "http://t.me/", "https://t.me/",
+)
+
+
+def load_manual_entries(path):
+    """Как load_lines(), но вдобавок понимает вставленный целиком
+    Xray/V2Ray JSON-конфиг (в один или несколько физических строк) —
+    достаёт из него ссылку на сервер через extract_uri_from_xray_json()."""
+
+    if not os.path.exists(path):
+        return []
+
+    with open(path, encoding="utf-8") as f:
+        raw_text = f.read()
+
+    entries = []
+    json_buffer = []
+
+    def flush_json_buffer():
+        if not json_buffer:
+            return
+        chunk = "\n".join(json_buffer).strip()
+        json_buffer.clear()
+        if not chunk:
+            return
+        uri = extract_uri_from_xray_json(chunk)
+        if uri:
+            entries.append(uri)
+        else:
+            print(
+                f"[!] {path}: не удалось разобрать JSON-блок "
+                f"(начало: {chunk[:60]}...)",
+                file=sys.stderr
+            )
+
+    for line in raw_text.splitlines():
+
+        stripped = line.strip()
+
+        if not stripped or stripped.startswith("#"):
+            flush_json_buffer()
+            continue
+
+        if stripped.startswith(URI_LINE_PREFIXES):
+            flush_json_buffer()
+            entries.append(stripped)
+            continue
+
+        # похоже на часть (много)строчного JSON - копим до конца блока
+        json_buffer.append(stripped)
+
+    flush_json_buffer()
+
+    return entries
 
 
 def parse_uri(uri):
@@ -1537,7 +1798,7 @@ def load_category(
         sources_path
     )
 
-    manual_uris = load_lines(
+    manual_uris = load_manual_entries(
         manual_path
     )
 
@@ -3054,6 +3315,62 @@ def main():
             "countries": countries,
             "sources": source_counts,
         }
+
+    # ------------------------------------------------------------------
+    # ОТДЕЛЬНЫЙ "РУЧНОЙ" ФАЙЛ — только manual.txt + manual_whitelist.txt,
+    # без автотеста и без источников. Нужен для персональной раздачи
+    # через Cloudflare Worker (см. отдельную инструкцию) — там срок
+    # действия задаётся индивидуально на человека, а не на весь файл.
+    # ------------------------------------------------------------------
+
+    manual_raw = (
+        load_manual_entries(args.manual)
+        + load_manual_entries(args.manual_white)
+    )
+
+    manual_seen = set()
+    manual_lines = []
+
+    for uri in manual_raw:
+
+        result = parse_uri(uri)
+
+        if not result:
+            continue
+
+        meta, _ = result
+
+        if any(b in meta["host"] for b in blacklist):
+            continue
+
+        key = (meta["proto"], meta["host"], meta["port"])
+
+        if key in manual_seen:
+            continue
+
+        manual_seen.add(key)
+        manual_lines.append(uri)
+
+    manual_b64 = base64.b64encode(
+        "\n".join(manual_lines).encode("utf-8")
+    ).decode("utf-8")
+
+    manual_path = os.path.join(
+        args.outdir,
+        "subscription_manual.txt"
+    )
+
+    with open(
+        manual_path,
+        "w",
+        encoding="utf-8"
+    ) as f:
+        f.write(manual_b64)
+
+    print(
+        f"[i] [manual] отдельный файл для Cloudflare Worker: "
+        f"{len(manual_lines)} конфигов -> {manual_path}"
+    )
 
     # ------------------------------------------------------------------
     # STATUS.md — сводка на самом видном месте, без лазания по логам
