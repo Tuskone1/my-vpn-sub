@@ -17,4 +17,4 @@
 #
 normal: never
 white: never
-manual: 01.09.2188
+manual: 2188-09-01
