@@ -2,7 +2,7 @@
 #profile-update-interval: 12
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
-vless://3aabd489-04af-42fb-87e2-363d1b83d335@45.152.198.111:6443?encryption=none&type=grpc&serviceName=your-custom-path&mode=gun&security=reality&sni=maps.apple.com&fp=chrome&pbk=OMlQAFrCMZ3DX0xlnbEZiByLBFzpUE8XJHJsrBzLdlY&sid=2da4299da566b7#🇩🇪 Германия | Нейросети
+vless://a0da3fcf-62f8-46d1-98c8-d3dd79d8c26d@media-6.fast-cone.com:8443?encryption=none&flow=xtls-rprx-vision&fp=qq&pbk=R-eIzSBCe8yNkwo7YA9nJOUzhbuCKNyp2odJeQ0ANSE&security=reality&sid=5a0f484e41f8dfc7&sni=media-6.fast-cone.com&type=tcp#🇩🇪 Германия | Нейросети
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@de.opngtr.nl:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&security=reality&sid=c37c2ae6f6eb0d71&sni=de.savesafe.cc&type=tcp#🇩🇪 Германия | Скоростной
 vless://c6fdfa4b-742c-4225-986b-b0e3bd3146a4@fi20.bearbeer.digital:443?encryption=none&flow=xtls-rprx-vision&type=tcp&headerType=none&security=reality&sni=fi20.bearbeer.digital&fp=qq&pbk=z-TKWOWgZLfzQ-wNdwXQqVwaUgCmbchM2Xtrk1NGynU&spx=%2F#🇫🇮 Финляндия | Нейросети
 vless://3ebb1100-d433-4404-9803-d731d7d88b13@138.124.97.184:2053?encryption=none&type=grpc&serviceName=MapsYandexAPI&mode=multi&security=reality&sni=api-maps.yandex.ru&fp=chrome&pbk=lN0He7OGawvWD8UeiJEcL5T1yQkEQRUfAnc6MLWB3As&fm=%7B%22type%22%3A%22fragment%22%2C%22settings%22%3A%7B%22delay%22%3A%222-5%22%2C%22length%22%3A%2240-80%22%2C%22packets%22%3A%22tlshello%22%2C%22maxSplit%22%3A%224-8%22%7D%7D#🇫🇮 Финляндия 8/250 GB
