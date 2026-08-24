@@ -551,6 +551,13 @@ def parse_vless_trojan(uri, proto):
             )
         }
 
+    elif network == "xhttp":
+        stream["xhttpSettings"] = {
+            "host": q.get("host", ""),
+            "path": q.get("path", "/"),
+            "mode": q.get("mode", "auto"),
+        }
+
     if proto == "vless":
         user = {
             "id": userinfo,
@@ -965,6 +972,20 @@ def _vless_outbound_to_uri(outbound, remarks):
             gs = stream.get("grpcSettings", {})
             if gs.get("serviceName"):
                 params["serviceName"] = gs["serviceName"]
+
+        elif network == "xhttp":
+            # он же SplitHTTP — новый транспорт, без path/host/mode
+            # соединение просто не установится
+            xs = stream.get("xhttpSettings", {})
+            if xs.get("path"):
+                params["path"] = xs["path"]
+            if xs.get("host"):
+                params["host"] = xs["host"]
+            if xs.get("mode"):
+                params["mode"] = xs["mode"]
+            # xmux (extra) — тонкая настройка производительности, у нас нет
+            # подтверждённого стандарта кодирования в URI, сознательно
+            # не переносим, чтобы не сгенерировать невалидную ссылку
 
         query = urllib.parse.urlencode({
             k: v for k, v in params.items() if v not in (None, "")
