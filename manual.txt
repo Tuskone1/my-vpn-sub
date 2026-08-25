@@ -2,7 +2,7 @@
 #profile-update-interval: 12
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
-vless://2508c83e-98bb-0068-9f28-065439f88897@37.18.14.89:8443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=qq&sni=rutube.ru&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&sid=43dcff53849b81e6#🇷🇺 Россия | YouTube
+vless://dbb5075f-2ff4-4aad-a952-bcc82e4a6355@109.69.17.228:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=bzzru.hat.apruxdomain.space&pbk=5f7Qx1uealNy3mUg8kV9R_npeYTogZwOsA-9bZtEfD0&sid=b2ba734eff38baa9#🇷🇺 Россия | YouTube
 vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@de.opngtr.nl:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&security=reality&sid=c37c2ae6f6eb0d71&sni=de.savesafe.cc&type=tcp#🇩🇪 Германия | Скоростной
 vless://2dd48980-5c2a-4f3b-bc8f-e20a8ae24ab1@fla.mythos-wargame.fun:80?type=ws&security=none&sni=fla.mythos-wargame.fun&path=%2Fassets%2Fsocket#🇫🇮 Финляндия | Нейросети
