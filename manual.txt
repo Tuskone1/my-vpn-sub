@@ -2,7 +2,7 @@
 #profile-update-interval: 12
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
-vless://dbb5075f-2ff4-4aad-a952-bcc82e4a6355@109.69.17.228:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=bzzru.hat.apruxdomain.space&pbk=5f7Qx1uealNy3mUg8kV9R_npeYTogZwOsA-9bZtEfD0&sid=b2ba734eff38baa9#🇷🇺 Россия | YouTube
+vless://d89b3577-a0f4-4327-bb16-2313b02a25f2@russia.vpber.store:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=russia.vpber.store&fp=firefox&pbk=fhacrLdXUT3a0PjnL5EVARAmGiNBn_0ysfCJfL3n_gQ&sid=4be4130078ebed0a&type=tcp#🇷🇺 Россия | YouTube
 vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@de.opngtr.nl:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&security=reality&sid=c37c2ae6f6eb0d71&sni=de.savesafe.cc&type=tcp#🇩🇪 Германия | Скоростной
 vless://13b54a52-a29f-4737-9941-26f54a4f87c4@fin.evovpn.pro:443?encryption=none&type=xhttp&path=%2Fvideo%2Fdownload&host=evovpn.pro&mode=stream-up&security=reality&sni=www.yandex.ru&fp=edge&pbk=ZKd5bjQ8ACciPQo_0ol7WEkUYUjGXaK9fMciQkFurF4&sid=b4c823&spx=%2F#🇫🇮 Финляндия | Нейросети
