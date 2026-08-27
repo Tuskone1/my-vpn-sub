@@ -3,7 +3,7 @@
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
 vless://52b140a1-1e12-4410-9532-ebaee7cec3a1@31.76.83.174:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=safari&sni=www.deutsche-bank.de&pbk=ikKnBJfcuPy1U0O3Cb71zv_G1liM5QcAYhR10A0Ech0&sid=0f00666a#🇱🇹 Литва | YouTube
-vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
+vless://52b140a1-1e12-4410-9532-ebaee7cec3a1@cdn.hisanvpn.ru:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=www.deutsche-bank.de&pbk=ikKnBJfcuPy1U0O3Cb71zv_G1liM5QcAYhR10A0Ech0&sid=0f00666a#🇩🇪 Германия | Нейросети
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@de.opngtr.nl:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&security=reality&sid=c37c2ae6f6eb0d71&sni=de.savesafe.cc&type=tcp#🇩🇪 Германия | Скоростной
 vless://cfb7f73f-233c-47b0-a2c3-6c7e1664793c@177.3.214.166:8443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.amazon.com&fp=qq&pbk=wjBCPpdDXJxQhYabEsKQrBH7umpeZYnMOHMviAus1V8&sid=086007&spx=%2F7NBi5gASiWBYoyY&type=tcp#🇫🇮Финляндия | Нейросети
 vless://0744205b-4f27-4e90-b266-62208cf5c7d8@31.76.51.118:2053?type=grpc&security=reality&fp=chrome&sni=api-maps.yandex.ru&pbk=lN0He7OGawvWD8UeiJEcL5T1yQkEQRUfAnc6MLWB3As&serviceName=MapsYandexAPI#🇫🇮 Финляндия 18/250 GB
