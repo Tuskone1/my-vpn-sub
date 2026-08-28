@@ -1,6 +1,6 @@
 #profile-title: base64:8J+QhyBUdXNrb25lIFZQTg==
 #profile-update-interval: 12
-#announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN
+#announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
 vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
 hysteria2://c37c8e64-b613-49b8-b65d-f416e5b4c1b6@2.27.43.161:443?sni=de1.apexvpn.space&alpn=h3#🇩🇪 Германия | Скоростной
