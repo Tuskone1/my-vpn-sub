@@ -4,7 +4,7 @@
 
 vless://6bef6685-e989-467c-8fea-7fa1c6a0af2c@194.156.26.16:443?encryption=none&security=tls&sni=LZc2j8i5PteXj5I7Aq0hFxQadvZcq.wF99sAF201Sfs9.wOrKers.dev&fp=qq&type=ws&path=%2Fvl%2FBBj8crirrHMxntD7H3o3z#🇷🇺 Россия | YouTube 
 vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
-hysteria2://115cad3d-535d-41ed-a853-6d89b7b6d11e@91.185.83.48:8444?sni=testing8.nimarko.org#🇩🇪 Германия | Скоростной
+vless://60e2a548-96aa-4850-a279-1edab743c39b@de1.cnyvpn.com:2053?security=reality&encryption=none&pbk=5_kjhGPcPUiUNJ0Mt4-YoRjphhDz3Hfvx1YCdbBRUA0&fp=firefox&type=grpc&serviceName=remnagrpc&sni=finanzfluss.de&sid=8b71da690c3d5d03#🇩🇪 Германия | Скоростной
 vless://568addfa-796a-40f8-820d-a071ee2ca50a@194.48.250.31:443?type=xhttp&security=reality&fp=qq&sni=www.google.com&pbk=sJTPQLMDCyPAbRcaJM-P8Y3_xRVpEEGrvv-kkIuIuQE&path=%2F&host=www.google.com&mode=auto#🇩🇪 Германия | Тест
 hysteria2://90dfa65f-ff02-4cfc-b7d3-12c06fe3e299@fin1.apexvpn.space:443?insecure=0&sni=fin1.apexvpn.space&alpn=h3&fp=qq#🇫🇮 Финляндия| Нейросети
 vless://0744205b-4f27-4e90-b266-62208cf5c7d8@31.76.51.118:443?type=grpc&security=reality&fp=firefox&sni=kinopoisk.ru&pbk=f0ZurlaR0w9bzzFDHpDri4nqGMXqPiXV3sIIzgvdXjk&sid=fef51a5f06139c0f&mode=true#🇫🇮 Финляндия 20/250 GB
