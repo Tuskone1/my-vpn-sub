@@ -3,7 +3,7 @@
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
 vless://6bef6685-e989-467c-8fea-7fa1c6a0af2c@194.156.26.16:443?encryption=none&security=tls&sni=LZc2j8i5PteXj5I7Aq0hFxQadvZcq.wF99sAF201Sfs9.wOrKers.dev&fp=qq&type=ws&path=%2Fvl%2FBBj8crirrHMxntD7H3o3z#🇷🇺 Россия | YouTube 
-vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@158.160.54.243:40812?encryption=none&security=reality&sni=passport.yandex.ru&fp=chrome&pbk=YDJJwDM3OnAtZ5rQfQt4EWPvjZcBP5IT_WVaVOpWH1g&type=xhttp&mode=packet-up&path=%2F#🇩🇪 Германия | Нейросети
+vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@public-auth.savesafe.cc:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=public-auth.savesafe.cc&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&sid=c37c2ae6f6eb0d71#🇩🇪 Германия | Нейросети
 vless://60e2a548-96aa-4850-a279-1edab743c39b@de1.cnyvpn.com:2053?security=reality&encryption=none&pbk=5_kjhGPcPUiUNJ0Mt4-YoRjphhDz3Hfvx1YCdbBRUA0&fp=firefox&type=grpc&serviceName=remnagrpc&sni=finanzfluss.de&sid=8b71da690c3d5d03#🇩🇪 Германия | Скоростной
 vless://568addfa-796a-40f8-820d-a071ee2ca50a@194.48.250.31:443?type=xhttp&security=reality&fp=qq&sni=www.google.com&pbk=sJTPQLMDCyPAbRcaJM-P8Y3_xRVpEEGrvv-kkIuIuQE&path=%2F&host=www.google.com&mode=auto#🇩🇪 Германия | Тест
 hysteria2://e748dd25-23f5-4cee-b56c-a3872849f791@fin1.apexvpn.space:443?sni=fin1.apexvpn.space&alpn=h3#🇫🇮 Финляндия | Нейросети
