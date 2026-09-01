@@ -4,6 +4,7 @@
 
 vless://6bef6685-e989-467c-8fea-7fa1c6a0af2c@194.156.26.16:443?encryption=none&security=tls&sni=LZc2j8i5PteXj5I7Aq0hFxQadvZcq.wF99sAF201Sfs9.wOrKers.dev&fp=qq&type=ws&path=%2Fvl%2FBBj8crirrHMxntD7H3o3z#🇷🇺 Россия | YouTube 
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@public-auth.savesafe.cc:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=public-auth.savesafe.cc&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&sid=c37c2ae6f6eb0d71#🇩🇪 Германия | Нейросети
+hysteria2://9311376a-814b-49b3-af70-9c7e7507e20f@fin1.apexvpn.space:443?sni=fin1.apexvpn.space&alpn=h3#🇫🇮 Финляндия | Нейросети
 vless://0744205b-4f27-4e90-b266-62208cf5c7d8@31.76.51.118:443?type=grpc&security=reality&fp=firefox&sni=kinopoisk.ru&pbk=f0ZurlaR0w9bzzFDHpDri4nqGMXqPiXV3sIIzgvdXjk&sid=fef51a5f06139c0f&mode=true#🇫🇮 Финляндия 20/250 GB
 vless://d0012f4d-bef9-0021-9655-d36fc93b1ee3@201.34.132.191:43439?encryption=none&security=reality&sni=cdn-up.perecbass.ru&fp=firefox&pbk=b4n1pcO8ST3JkGtj8YymXVrW17LEe2EHec5wY7hMMR4&sid=9b4e2d7ac1f86305&type=grpc&serviceName=ws#🇫🇮 Финляндия | Тест 9ГБ/день
 vless://c3472114-48fa-4ca3-b1ab-60cd60bdc8f6@147.45.61.81:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=nl-02.file-rkat.online&pbk=1KdHB8WjI4E_Qt43QdY0OByHv9CkLjK_cAtVOcnt1Ug&sid=c8eebab189078461#🇳🇱 Нидерланды | Нейросети
