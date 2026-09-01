@@ -17,3 +17,4 @@ vless://2a2e5900-bde2-49a8-a862-6bd320b97d2c@api3.mosticc.ru:443?type=xhttp&secu
 vless://3981b78b-5e6a-4cfa-b45d-9d21241137fd@87.228.101.111:10443?type=grpc&security=reality&fp=firefox&sni=5post-gate.x5.ru&pbk=mmRTemhfrx-ItuDslDXSumC5wJJmfP-iqk5jPtei2Qc&sid=9a5885e0#🇳🇱 Обход #3
 trojan://oFRMYz_DSD1LRWLUVCahtsjjS6TxsNS8@151.236.114.140:8444?type=tcp&security=tls&fp=firefox&sni=eenode121.velox-network.org&alpn=h2,http/1.1#🇪🇪 Обход #4
 vless://2c634977-584e-4e1f-b501-1b70c77a6743@185.141.227.150:9001?type=grpc&security=reality&fp=chrome&sni=api-maps.yandex.ru&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2&serviceName=grpc-reality&mode=gun#🇳🇱 Обход #5
+vless://953358cb-82ba-4296-960d-6d2ec3468f4c@188.68.218.178:26702?type=xhttp&security=reality&fp=firefox&sni=cloudcdn-m9-6.cdn.yandex.net&pbk=5my40gyTAIJb7bEZasYD3sIp6F6Gg_OS46MT0b6lAXQ&sid=aaaa&path=%2Fxhttp_client_upload&host=cloudcdn-m9-6.cdn.yandex.net&mode=packet-up#🇳🇱 Обход #6
