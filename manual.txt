@@ -19,3 +19,5 @@ vless://65cd649c-f2f5-49c4-8f57-94d9b706e846@fwms29-02.p.portshaper.com:8445?typ
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@31.177.111.163:8443?type=tcp&security=tls&fp=firefox&sni=ru1.quickgo.cc&alpn=h2,http/1.1#🇷🇺 Обход #4
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@46.8.209.170:8443?type=tcp&security=tls&fp=firefox&sni=rum2.quickgo.cc&alpn=h2,http/1.1#🇷🇺 Обход #5
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@46.8.208.15:993?type=tcp&security=tls&fp=firefox&sni=plnode12.ichost.cloud&alpn=h2,http/1.1#🇵🇱 Обход #6
+trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@185.91.52.139:6443?type=tcp&security=tls&fp=firefox&sni=ice.velox-network.org&alpn=h2,http/1.1#🇪🇪 Обход #7
+trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@151.236.114.140:8444?type=tcp&security=tls&fp=firefox&sni=eenode121.velox-network.org&alpn=h2,http/1.1#🇪🇪 Обход #8
