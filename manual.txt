@@ -21,3 +21,4 @@ trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@46.8.209.170:8443?type=tcp&security=tl
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@46.8.208.15:993?type=tcp&security=tls&fp=firefox&sni=plnode12.ichost.cloud&alpn=h2,http/1.1#🇵🇱 Обход #6
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@185.91.52.139:6443?type=tcp&security=tls&fp=firefox&sni=ice.velox-network.org&alpn=h2,http/1.1#🇪🇪 Обход #7
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@151.236.114.140:8444?type=tcp&security=tls&fp=firefox&sni=eenode121.velox-network.org&alpn=h2,http/1.1#🇪🇪 Обход #8
+trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@81.163.22.83:6443?type=tcp&security=tls&fp=firefox&sni=speed-detwo.cloudload.org&alpn=h2#🇩🇪 Обход #9
