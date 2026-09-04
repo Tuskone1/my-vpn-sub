@@ -20,3 +20,4 @@ trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@151.236.114.140:8444?type=tcp&security
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@81.163.22.83:6443?type=tcp&security=tls&fp=firefox&sni=speed-detwo.cloudload.org&alpn=h2#🇩🇪 Обход #4
 vless://2324f230-0341-47c7-8aac-8974fd48f0a4@79.174.92.85:6443?type=grpc&security=reality&fp=firefox&sni=iv.kommersant.ru&pbk=lU1yF2A1b0lM9DZbXWPpLfoU7_KQpXOYX0NFrPEIJy8&sid=bad5722c72a0&serviceName=grpc#🇫🇮 Обход #5
 trojan://kPCHGQd2HfUXgwkLFysGexRMwvX0PNop@46.8.208.15:993?type=tcp&security=tls&fp=firefox&sni=plnode12.ichost.cloud&alpn=h2,http/1.1#🇵🇱 Обход #6
+vless://954f495f-3c39-000e-9745-752bb56f605f@178.248.232.207:14443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=qq&sni=static.rutube.ru&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&sid=43dcff53849b81e6#🇫🇮 Обход #6
