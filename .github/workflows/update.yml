@@ -31,6 +31,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: vpn-subscription-build
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -86,15 +90,33 @@ jobs:
           git config user.name "sub-bot"
           git config user.email "sub-bot@users.noreply.github.com"
 
-          git add output/
+          mkdir -p /tmp/output_fresh
+          cp -r output/* /tmp/output_fresh/
 
-          if git diff --cached --quiet; then
-            echo "No changes to commit"
-            exit 0
-          fi
+          for i in 1 2 3 4 5; do
+            git fetch origin main
+            git checkout main
+            git reset --hard origin/main
 
-          git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
+            cp -r /tmp/output_fresh/* output/
+            git add output/
 
-          git pull --rebase origin main
+            if git diff --cached --quiet; then
+              echo "No changes to commit"
+              exit 0
+            fi
 
-          git push origin main
+            git commit -m "auto-update subscription $(date -u +%F_%H-%M)"
+
+            if git push origin main; then
+              echo "Pushed successfully"
+              exit 0
+            fi
+
+            echo "Push race detected, retry $i..."
+            git reset --hard HEAD~1
+            sleep $((RANDOM % 10 + 3))
+          done
+
+          echo "Failed to push after retries"
+          exit 1
