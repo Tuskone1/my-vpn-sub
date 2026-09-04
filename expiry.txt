@@ -17,4 +17,4 @@
 #
 normal: never
 white: never
-manual: 2026-09-12
+manual: 2026-10-04
