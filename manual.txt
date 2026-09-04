@@ -2,7 +2,6 @@
 #profile-update-interval: 12
 #announce: Используйте конфиг обхода только при блокировках мобильной сети. Пожалуйста, не скачивайте торренты через VPN.
 
-
 vless://6bef6685-e989-467c-8fea-7fa1c6a0af2c@194.156.26.16:443?encryption=none&security=tls&sni=LZc2j8i5PteXj5I7Aq0hFxQadvZcq.wF99sAF201Sfs9.wOrKers.dev&fp=qq&type=ws&path=%2Fvl%2FBBj8crirrHMxntD7H3o3z#🇷🇺 Россия | YouTube 
 vless://fa47585b-260a-4dbb-a32c-11fe7fb24fc7@public-auth.savesafe.cc:443?flow=xtls-rprx-vision&type=tcp&security=reality&fp=firefox&sni=public-auth.savesafe.cc&pbk=YULPgY4Knu4LVqKcc2uhzTcndqIWWKr74W1dVXcLQ0c&sid=c37c2ae6f6eb0d71#🇩🇪 Германия | Нейросети
 vless://b8508dc3-2998-4e49-b0fc-0e5b97d574a6@45.12.114.64:40001?type=xhttp&security=reality&fp=firefox&sni=cdn3-86.yahoo.com&pbk=Dl4-nKAkksLHmX2yR0LWAzyFBjIj1W10R4OxHKMX2AI&path=%2F&mode=auto&extra=%7B%22xmux%22%3A%7B%22cMaxReuseTimes%22%3A%2264-128%22%2C%22maxConcurrency%22%3A%2216-32%22%2C%22maxConnections%22%3A0%2C%22hMaxRequestTimes%22%3A%22600-900%22%2C%22hMaxReusableSecs%22%3A%221800-3000%22%7D%2C%22noSSEHeader%22%3Atrue%2C%22xPaddingBytes%22%3A%22333-1777%22%2C%22scMaxBufferedPosts%22%3A30%2C%22scMaxEachPostBytes%22%3A1000000%2C%22scMinPostsIntervalMs%22%3A30%7D#🇩🇪 Германия | Скоростной
