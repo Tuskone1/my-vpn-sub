@@ -36,7 +36,7 @@ SPEED_TEST_BYTES = 524288
 BASE_SOCKS_PORT = 24000
 
 URI_RE = re.compile(
-    r'(?:vless|hysteria2|hy2)://[^\s<>"\'\\]+'
+    r'(?:vless|trojan|hysteria2|hy2)://[^\s<>"\'\\]+'
 )
 
 
@@ -1031,6 +1031,68 @@ def _hysteria_outbound_to_uri(outbound, remarks):
         return None
 
 
+def _trojan_outbound_to_uri(outbound, remarks):
+    try:
+        settings = outbound.get("settings", {})
+        server = (settings.get("servers") or [{}])[0]
+        address = server.get("address")
+        port = server.get("port")
+        password = server.get("password")
+
+        if not (address and port and password):
+            return None
+
+        stream = outbound.get("streamSettings", {})
+        network = stream.get("network", "tcp")
+        security = stream.get("security", "tls")
+
+        params = {
+            "type": network,
+            "security": security,
+        }
+
+        if security == "tls":
+            ts = stream.get("tlsSettings", {})
+            if ts.get("serverName"):
+                params["sni"] = ts["serverName"]
+            if ts.get("fingerprint"):
+                params["fp"] = ts["fingerprint"]
+            if ts.get("alpn"):
+                params["alpn"] = ",".join(ts["alpn"])
+
+        elif security == "reality":
+            rs = stream.get("realitySettings", {})
+            params["sni"] = rs.get("serverName", "")
+            params["pbk"] = rs.get("publicKey", "")
+            params["sid"] = rs.get("shortId", "")
+            if rs.get("fingerprint"):
+                params["fp"] = rs["fingerprint"]
+
+        if network == "ws":
+            ws = stream.get("wsSettings", {})
+            if ws.get("path"):
+                params["path"] = ws["path"]
+            ws_host = (ws.get("headers") or {}).get("Host")
+            if ws_host:
+                params["host"] = ws_host
+
+        elif network == "grpc":
+            gs = stream.get("grpcSettings", {})
+            if gs.get("serviceName"):
+                params["serviceName"] = gs["serviceName"]
+
+        query = urllib.parse.urlencode({
+            k: v for k, v in params.items() if v not in (None, "")
+        })
+
+        frag = urllib.parse.quote(remarks)
+
+        return f"trojan://{password}@{address}:{port}?{query}#{frag}"
+
+    except Exception:
+        return None
+
+
 _VALID_JSON_ESCAPES = set('"\\/bfnrtu')
 
 
@@ -1069,11 +1131,16 @@ def _repair_json_escapes(text):
     return "".join(result)
 
 
-def extract_uri_from_xray_json(chunk):
+def extract_all_uris_from_xray_json(chunk):
     """Принимает текст целого Xray/V2Ray клиентского JSON-конфига (или
-    просто один outbound-объект) и достаёт из него vless:// / hysteria2://
-    ссылку на сервер. Правила маршрутизации из такого JSON намеренно
-    игнорируются — подписка физически не может их нести."""
+    просто один outbound-объект) и достаёт из него ВСЕ vless:// / hysteria2://
+    ссылки (не только первую) — важно для конфигов с балансировщиком/
+    автовыбором между несколькими серверами: один URI физически не может
+    нести в себе автовыбор (это настройка клиента, не подписки), поэтому
+    единственный честный вариант — отдать всех кандидатов, чтобы наш
+    собственный пайплайн (3 раунда тестов + отбор лучших) выбрал сам.
+    Правила маршрутизации из такого JSON намеренно игнорируются — подписка
+    физически не может их нести."""
 
     data = None
 
@@ -1083,9 +1150,9 @@ def extract_uri_from_xray_json(chunk):
         try:
             data = json.loads(_repair_json_escapes(chunk))
         except Exception:
-            return None
+            return []
 
-    remarks = (
+    base_remark = (
         data.get("remarks")
         or data.get("ps")
         or data.get("name")
@@ -1099,27 +1166,53 @@ def extract_uri_from_xray_json(chunk):
         outbounds = [data]
 
     if not outbounds:
-        return None
+        return []
+
+    results = []
 
     for ob in outbounds:
 
         proto = ob.get("protocol")
+        uri = None
 
         if proto == "vless":
-            uri = _vless_outbound_to_uri(ob, remarks)
-            if uri:
-                return uri
+            uri = _vless_outbound_to_uri(ob, base_remark)
 
-        if proto == "hysteria":
-            uri = _hysteria_outbound_to_uri(ob, remarks)
-            if uri:
-                return uri
+        elif proto == "hysteria":
+            uri = _hysteria_outbound_to_uri(ob, base_remark)
 
-    return None
+        elif proto == "trojan":
+            uri = _trojan_outbound_to_uri(ob, base_remark)
+
+        if not uri:
+            continue
+
+        # если кандидатов несколько - различаем remark по tag,
+        # иначе все получат одинаковое название
+        if len(results) >= 1:
+            tag = ob.get("tag", "")
+            new_remark = (
+                f"{base_remark} {tag}".strip()
+                if tag
+                else f"{base_remark} #{len(results) + 1}"
+            )
+            base_part, _ = uri.rsplit("#", 1)
+            uri = base_part + "#" + urllib.parse.quote(new_remark)
+
+        results.append(uri)
+
+    return results
+
+
+def extract_uri_from_xray_json(chunk):
+    """Как extract_all_uris_from_xray_json(), но только первый найденный
+    сервер — оставлено для обратной совместимости."""
+    uris = extract_all_uris_from_xray_json(chunk)
+    return uris[0] if uris else None
 
 
 URI_LINE_PREFIXES = (
-    "vless://", "hysteria2://", "hy2://",
+    "vless://", "trojan://", "hysteria2://", "hy2://",
     "@", "t.me/", "http://t.me/", "https://t.me/",
 )
 
@@ -1145,9 +1238,14 @@ def load_manual_entries(path):
         json_buffer.clear()
         if not chunk:
             return
-        uri = extract_uri_from_xray_json(chunk)
-        if uri:
-            entries.append(uri)
+        uris = extract_all_uris_from_xray_json(chunk)
+        if uris:
+            entries.extend(uris)
+            if len(uris) > 1:
+                print(
+                    f"[i] {path}: из одного JSON-блока извлечено "
+                    f"{len(uris)} серверов (авто-подбор/балансировщик)"
+                )
         else:
             print(
                 f"[!] {path}: не удалось разобрать JSON-блок "
@@ -1155,11 +1253,17 @@ def load_manual_entries(path):
                 file=sys.stderr
             )
 
+    FILTERED_SCHEMES = ("vmess://", "ss://", "shadowsocks://")
+
     for line in raw_text.splitlines():
 
         stripped = line.strip()
 
         if not stripped or stripped.startswith("#"):
+            flush_json_buffer()
+            continue
+
+        if stripped.startswith(FILTERED_SCHEMES):
             flush_json_buffer()
             continue
 
@@ -1183,7 +1287,7 @@ def parse_uri(uri):
             1
         )[0].lower()
 
-        if scheme == "vless":
+        if scheme in ("vless", "trojan"):
             return parse_vless_trojan(
                 uri,
                 scheme
@@ -1927,7 +2031,7 @@ def load_category(
     print(
         f"[i] [{category}] "
         f"other protocols filtered out "
-        f"(vmess/trojan/ss/etc): {skipped_protocol}"
+        f"(vmess/ss/etc): {skipped_protocol}"
     )
 
     print(
